@@ -48,6 +48,7 @@ cirStatement::cirStatement(std::string &rawString) {
     // The remaining code in this function determines the type of the SPICE
     // statement.
 
+    statClass = CLASS_EMPTY;
     if (strList.size() == 0) {
         type = STAT_EMPTY;
     } else {
@@ -57,22 +58,40 @@ cirStatement::cirStatement(std::string &rawString) {
 
         switch (typeChar) {
         case '*':
-            type = STAT_COMMENT;
+            type      = STAT_COMMENT;
+            statClass = CLASS_COMMENT;
             break;
         case '+':
-            type = STAT_CONTLINE;
+            type      = STAT_CONTLINE;
+            statClass = CLASS_EMPTY;
             break;
         case 'R':
-            type = STAT_RESISTANCE;
+            type      = STAT_RESISTANCE;
+            statClass = CLASS_PASSIVE;
             break;
         case 'L':
-            type = STAT_INDUCTANCE;
+            type      = STAT_INDUCTANCE;
+            statClass = CLASS_PASSIVE;
             break;
         case 'C':
-            type = STAT_CAPACITANCE;
+            type      = STAT_CAPACITANCE;
+            statClass = CLASS_PASSIVE;
             break;
         case 'V':
-            type = STAT_VOLTAGESOURCE;
+            type      = STAT_VOLTAGESOURCE;
+            statClass = CLASS_SOURCE;
+            break;
+        case 'D':
+            type      = STAT_DIODE;
+            statClass = CLASS_NONLINEAR;
+            break;
+        case 'Q':
+            type      = STAT_BJT;
+            statClass = CLASS_NONLINEAR;
+            break;
+        case 'M':
+            type      = STAT_MOSFET;
+            statClass = CLASS_NONLINEAR;
             break;
         case '.': {
             std::string metastr(first);
@@ -81,16 +100,21 @@ cirStatement::cirStatement(std::string &rawString) {
 
             if (metastr == "DC" || metastr == "AC" || metastr == "TRAN" || metastr == "TF" ||
                 metastr == "OP") {
-                type = STAT_ANALYSIS;
+                type      = STAT_ANALYSIS;
+                statClass = CLASS_META;
                 std::cout << "Analysis Type : " << "\"" << metastr << "\"" << std::endl;
             } else if (metastr == "MODEL") {
-                type = STAT_MODEL;
+                type      = STAT_MODEL;
+                statClass = CLASS_META;
             } else if (metastr == "END"){
-                type = STAT_END;
+                type      = STAT_END;
+                statClass = CLASS_META;
             } else if (metastr == "SUBCKT") {
-                type = STAT_SUBCKT;
+                type      = STAT_SUBCKT;
+                statClass = CLASS_META;
             } else if (metastr == "ENDS") {
-                type = STAT_ENDS;
+                type      = STAT_ENDS;
+                statClass = CLASS_META;
             } else {
                 std::cerr << "Invalid Meta Statement : " << "\"" << metastr << "\"" << std::endl;
                 exit(-1);
