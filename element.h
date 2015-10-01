@@ -1,5 +1,5 @@
-#ifndef NETLIST_H
-#define NETLIST_H
+#ifndef ELEMENT_H
+#define ELEMENT_H
 
 #include <iostream>
 #include <vector>
@@ -21,4 +21,4 @@ public:
     std::vector <double> valueList;
 };
 
-#endif // NETLIST_H
+#endif // ELEMENT_H

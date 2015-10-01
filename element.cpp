@@ -1,4 +1,4 @@
-#include "netList.h"
+#include "element.h"
 
 Element::Element(const cirStatement &stat) {
     elemType  = stat.type;
