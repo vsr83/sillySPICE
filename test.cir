@@ -1,0 +1,17 @@
+SIMPLE CIRCUIT
+ R1  1  0  10MEG  ; vittumainen vastus
+
+  R4 1 0 
+ + 5m
+ +
+ +
+
+R5
++ 1
++
++   2 ; 4
++ 3
+VDC 1 0 5 
+*FOOOBAR
+.dc vin 0 1 2
+.end

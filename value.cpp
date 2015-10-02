@@ -22,7 +22,7 @@ Value::Value(std::string str) {
             strSuffix.push_back(std::toupper(c));
         }
     }
-    std::cout << "\"" << strNum << "\"" << "/\"" << strSuffix << "\"" << std::endl;
+//    std::cout << "\"" << strNum << "\"" << "/\"" << strSuffix << "\"" << std::endl;
     val = atof(strNum.c_str());
 
     if (strSuffix.length() == 0) {
@@ -58,9 +58,9 @@ Value::~Value() {
 
 int
 main(int argc, char **argv) {
-    Value val1(std::string("-1.43MEG")),
-          val2(std::string("1.1.1P")),
-          val3(std::string("-.1MEG"));
+    Value val1(std::string("-1.43MEGF")),
+          val2(std::string("1.1.1PC")),
+          val3(std::string("-.1MEGA"));
 
     std::cout << val1.val << std::endl;
     std::cout << val2.val << std::endl;

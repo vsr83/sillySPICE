@@ -52,6 +52,7 @@ cirStatement::cirStatement(std::string &rawString) {
     if (strList.size() == 0) {
         type = STAT_EMPTY;
     } else {
+        assert(strList.size() > 0);
         std::string first = strList[0];
         assert(first.length() > 0);
         char typeChar = first[0];
@@ -133,6 +134,7 @@ cirStatement::cirStatement(std::string &rawString) {
 cirStatement::cirStatement(const cirStatement &_stat) {
     strList = _stat.strList;
     type = _stat.type;
+    statClass = _stat.statClass;
 }
 
 cirStatement::~cirStatement() {

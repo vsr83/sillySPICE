@@ -15,10 +15,13 @@
 
 class NodeList {
 public:
+    NodeList(const NodeList &nodeList);
     NodeList(std::set<std::string> &_nodeStrings);
     NodeList(std::vector<std::string> &_nodeStrings);
 
     ~NodeList();
+
+    void disp();
 
     std::map <std::string, unsigned int> mapStringNode;
     std::vector <std::string> mapNodeString;

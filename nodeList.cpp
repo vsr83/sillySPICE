@@ -12,6 +12,11 @@ NodeList::NodeList(std::set<std::string> &_nodeStrings) {
     parseSet(_nodeStrings);
 }
 
+NodeList::NodeList(const NodeList &nodeList) {
+    mapNodeString = nodeList.mapNodeString;
+    mapStringNode = nodeList.mapStringNode;
+}
+
 void
 NodeList::parseSet(std::set<std::string> &_nodeStrings) {
     unsigned int nodeInd = 0;
@@ -23,7 +28,7 @@ NodeList::parseSet(std::set<std::string> &_nodeStrings) {
     for (std::set<std::string>::iterator it=_nodeStrings.begin(); it!=_nodeStrings.end(); ++it) {
         std::string nodeStr = *it;
 
-        std::cout << "node:" << nodeStr << std::endl;
+//        std::cout << "node:" << nodeStr << std::endl;
         assert(nodeStr.length() > 0);
         if (nodeStr == "0") {
             gndFound = true;
@@ -34,6 +39,13 @@ NodeList::parseSet(std::set<std::string> &_nodeStrings) {
         }
     }
     assert(gndFound);
+}
+
+void
+NodeList::disp() {
+    for (std::map<std::string, unsigned int>::iterator it=mapStringNode.begin(); it!=mapStringNode.end(); ++it) {
+        std::cout << "\"" << it->first << "\" -> " << it->second << std::endl;
+    }
 }
 
 NodeList::~NodeList() {

@@ -13,9 +13,9 @@ public:
     cirStatement(std::string &rawString);
     ~cirStatement();
 
+    unsigned int type, statClass;
     std::vector <std::string> strList;
 
-    unsigned int type, statClass;
     enum {CLASS_EMPTY,
           CLASS_COMMENT,
           CLASS_SUBCKT,
