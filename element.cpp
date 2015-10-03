@@ -3,6 +3,7 @@
 Element::Element(const cirStatement &stat) {
     elemType  = stat.type;
     elemClass = stat.statClass;
+    name  = stat.strList[0];
 
     assert(elemClass == stat.CLASS_SOURCE || elemClass == stat.CLASS_PASSIVE
            || elemClass == stat.CLASS_NONLINEAR);

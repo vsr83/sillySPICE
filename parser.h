@@ -16,6 +16,8 @@ public:
     std::vector <Element> elements;
     std::set <std::string> nodeSet;
 
+    std::map <unsigned int, unsigned int> elemTypeCount;
+
     NodeList *nodeList;
 
     enum{ANALYSIS_EMPTY, ANALYSIS_DC, ANALYSIS_AC, ANALYSIS_TRAN, ANALYSIS_TF,
@@ -25,7 +27,7 @@ public:
     enum{ANALYSIS_DC_LIN, ANALYSIS_DC_DEC, ANALYSIS_DC_OCT};
     unsigned int analysisTypeDC, analysisDCnpoints;
     std::string analysisDCvar;
-    double analysisDCstartFreq, analysisDCendFreq, analysisDCinc;
+    double analysisDCstartValue, analysisDCendValue, analysisDCinc;
 
     enum{ANALYSIS_AC_LIN, ANALYSIS_AC_DEC, ANALYSIS_AC_OCT};
     unsigned int analysisTypeAC;

@@ -25,6 +25,8 @@ public:
 
     std::map <std::string, unsigned int> mapStringNode;
     std::vector <std::string> mapNodeString;
+
+    unsigned int numNodes;
 private:
     void parseSet(std::set <std::string> &_nodeStrings);
 };

@@ -39,6 +39,7 @@ NodeList::parseSet(std::set<std::string> &_nodeStrings) {
         }
     }
     assert(gndFound);
+    numNodes = mapNodeString.size();
 }
 
 void
