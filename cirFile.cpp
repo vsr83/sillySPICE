@@ -64,8 +64,21 @@ cirStatement::cirStatement(std::string &rawString) {
             }
         }
         if (!found) {
-            std::cerr << "Unknown statement type \"" << first << "\"" << std::endl;
+            std::cerr << "Unknown statement type \"" << first << "\"!" << std::endl;
+            exit(-1);
         }
+        if (strList.size()-1 < statements[type].minArg || strList.size()-1 > statements[type].maxArg) {
+            std::cerr << "Invalid number of arguments " << strList.size() << " with"
+                      << statements[type].statStr << " "
+                      << statements[type].minArg << " - " << statements[type].maxArg
+                      << " required!" << std::endl;
+            exit(-1);
+        }
+        if (!statements[type].implemented) {
+            std::cerr << "Statement \"" << statements[type].statStr << "\" not implemented!" << std::endl;
+            exit(-1);
+        }
+
     }
     std::cout << strList.size() << " - ";
     for (unsigned int indStr = 0; indStr < strList.size(); indStr++) {

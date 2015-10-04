@@ -64,7 +64,7 @@ struct {
     char *name;
 } static const statements[] {
     STAT_EMPTY,          CLASS_EMPTY,     " ",          false, true,  0, 0,    "Empty Statement",
-    STAT_COMMENT,        CLASS_META,      "*",          true,  true,  0, 0,    "Comment",
+    STAT_COMMENT,        CLASS_META,      "*",          true,  true,  0, 1024, "Comment",
     STAT_CONTLINE,       CLASS_META,      "+",          true,  true,  0, 0,    "Continue Line",
     STAT_RESISTANCE,     CLASS_PASSIVE,   "R",          true,  true,  3, 4,    "Resistance",
     STAT_INDUCTANCE,     CLASS_PASSIVE,   "L",          true,  false, 3, 5,    "Inductance",
