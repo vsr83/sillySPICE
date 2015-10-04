@@ -58,11 +58,11 @@ enum {STAT_EMPTY,
 
 struct {
     unsigned statNum, classNum;
-    char *statStr;
+    const char *statStr;
     bool singleChar, implemented;
     unsigned int minArg, maxArg;
-    char *name;
-} static const statements[] {
+    const char *name;
+} static const statements[] = {
     STAT_EMPTY,          CLASS_EMPTY,     " ",          false, true,  0, 0,    "Empty Statement",
     STAT_COMMENT,        CLASS_META,      "*",          true,  true,  0, 1024, "Comment",
     STAT_CONTLINE,       CLASS_META,      "+",          true,  true,  0, 0,    "Continue Line",
