@@ -14,8 +14,7 @@ Parser::Parser(std::vector<cirStatement> &statList) {
                   << " type=" << stat.type
                   << std::endl;
 
-        if (stat.statClass == cirStatement::CLASS_PASSIVE
-                || stat.statClass == cirStatement::CLASS_SOURCE) {
+        if (stat.statClass == CLASS_PASSIVE || stat.statClass == CLASS_SOURCE) {
             Element elem(stat);
             elements.push_back(elem);
 
@@ -24,82 +23,53 @@ Parser::Parser(std::vector<cirStatement> &statList) {
             }
         }
 
-        if (stat.statClass == cirStatement::CLASS_META) {
-            // Parse analysis statements
-            switch (stat.type) {
-                case cirStatement::STAT_ANALYSIS: {
-                    std::string anTypeStr(stat.strList[0]);
-
-                    if (anTypeStr == ".DC") {
-                        analysisType = ANALYSIS_DC;
-                        if (stat.strList.size() == 6) {
-                            if (stat.strList[1] == "LIN") {
-                                analysisTypeDC = ANALYSIS_DC_LIN;
-                            } else if (stat.strList[1] == "DEC") {
-                                analysisTypeDC = ANALYSIS_DC_DEC;
-                            } else if (stat.strList[1] == "OCT") {
-                                analysisTypeDC = ANALYSIS_DC_OCT;
-                            } else {
-                                std::cerr << "Unknown DC analysis mode" << std::endl;
-                                exit(-1);
-                            }
-                            analysisDCvar = stat.strList[2];
-                            Value startVal(stat.strList[3]),
-                                  endVal  (stat.strList[4]),
-                                  stepVal (stat.strList[5]);
-                            analysisDCstartValue = startVal.val;
-                            analysisDCendValue   = endVal.val;
-                            if (analysisTypeDC == ANALYSIS_DC_LIN) {
-                                analysisDCinc     = 0;
-                                analysisDCnpoints = atoi(stat.strList[5].c_str());
-                            } else {
-                                analysisDCinc   = stepVal.val;
-                                analysisDCnpoints = 0;
-                            }
-                        } else if (stat.strList.size() == 5) {
-                            analysisTypeDC = ANALYSIS_DC_LIN;
-                            analysisDCvar = stat.strList[1];
-                            Value startVal(stat.strList[2]),
-                                  endVal  (stat.strList[3]);
-                            analysisDCstartValue = startVal.val;
-                            analysisDCendValue   = endVal.val;
-                            analysisDCnpoints = atoi(stat.strList[4].c_str());
-                            analysisDCinc = 0;
-                        } else {
-                            std::cerr << "Unknown number of parameters" << std::endl;
-                            exit(-1);
-                        }
-
-                    } else if (anTypeStr == ".AC" ) {
-                        analysisType = ANALYSIS_AC;
-                        analysisACnpoints = atoi(stat.strList[2].c_str());
-                        Value startFreq(stat.strList[3]),
-                              endFreq(stat.strList[4]);
-                        analysisACstartFreq = startFreq.val;
-                        analysisACendFreq   = endFreq.val;
-
-                        if (stat.strList[1] == "LIN") {
-                            analysisTypeAC = ANALYSIS_AC_LIN;
-                        } else if (stat.strList[1] == "DEC") {
-                            analysisTypeAC = ANALYSIS_AC_DEC;
-                        } else if (stat.strList[1] == "OCT") {
-                            analysisTypeAC = ANALYSIS_AC_OCT;
-                        }
-                    } else if (anTypeStr == ".TRAN") {
-                        analysisType = ANALYSIS_TRAN;
-                    } else if (anTypeStr == ".TF") {
-                        analysisType = ANALYSIS_TF;
-                    } else if (anTypeStr == ".OP") {
-                        analysisType = ANALYSIS_OP;
+        if (stat.statClass == CLASS_ANALYSIS) {
+            switch(stat.type) {
+            case STAT_ANALYSISDC:
+                analysisType = ANALYSIS_DC;
+                if (stat.strList.size() == 6) {
+                    if (stat.strList[1] == "LIN") {
+                        analysisTypeDC = ANALYSIS_DC_LIN;
+                    } else if (stat.strList[1] == "DEC") {
+                        analysisTypeDC = ANALYSIS_DC_DEC;
+                    } else if (stat.strList[1] == "OCT") {
+                        analysisTypeDC = ANALYSIS_DC_OCT;
                     } else {
-                        std::cerr << "Unknown analysis type :" << anTypeStr;
+                        std::cerr << "Unknown DC analysis mode" << std::endl;
+                        exit(-1);
                     }
+                    analysisDCvar = stat.strList[2];
+                    Value startVal(stat.strList[3]),
+                          endVal  (stat.strList[4]),
+                          stepVal (stat.strList[5]);
+                    analysisDCstartValue = startVal.val;
+                    analysisDCendValue   = endVal.val;
+                    if (analysisTypeDC == ANALYSIS_DC_LIN) {
+                       analysisDCinc     = 0;
+                       analysisDCnpoints = atoi(stat.strList[5].c_str());
+                    } else {
+                       analysisDCinc   = stepVal.val;
+                       analysisDCnpoints = 0;
+                    }
+                } else if (stat.strList.size() == 5) {
+                    analysisTypeDC = ANALYSIS_DC_LIN;
+                    analysisDCvar = stat.strList[1];
+                    Value startVal(stat.strList[2]),
+                          endVal  (stat.strList[3]);
+                    analysisDCstartValue = startVal.val;
+                    analysisDCendValue   = endVal.val;
+                    analysisDCnpoints = atoi(stat.strList[4].c_str());
+                    analysisDCinc = 0;
+                } else {
+                   std::cerr << "Unknown number of parameters" << std::endl;
+                   exit(-1);
                 }
+                break;
+            default:
                 break;
             }
         }
     }
-    assert(analysisType != ANALYSIS_EMPTY);
     nodeList = new NodeList(nodeSet);
 
     std::cout << "Analysis Type: ";

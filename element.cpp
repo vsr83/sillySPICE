@@ -5,11 +5,11 @@ Element::Element(const cirStatement &stat) {
     elemClass = stat.statClass;
     name  = stat.strList[0];
 
-    assert(elemClass == stat.CLASS_SOURCE || elemClass == stat.CLASS_PASSIVE
-           || elemClass == stat.CLASS_NONLINEAR);
+    assert(elemClass == CLASS_SOURCE || elemClass == CLASS_PASSIVE
+           || elemClass == CLASS_NONLINEAR);
 
     switch (elemClass) {
-    case cirStatement::CLASS_PASSIVE:
+    case CLASS_PASSIVE:
     {
         assert(stat.strList.size() == 4);
 
@@ -19,7 +19,7 @@ Element::Element(const cirStatement &stat) {
         valueList.push_back(val.val);
     }
         break;
-    case cirStatement::CLASS_SOURCE:
+    case CLASS_SOURCE:
     {
         assert(stat.strList.size() == 4 || stat.strList.size() == 5);
 
@@ -36,7 +36,7 @@ Element::Element(const cirStatement &stat) {
         }
     }
         break;
-    case cirStatement::CLASS_NONLINEAR:
+    case CLASS_NONLINEAR:
         break;
     }
 }

@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "matrix.h"
+#include "statements.h"
 
 #ifdef RESISTIVE_TEST
 
@@ -21,8 +22,8 @@ main(int argc, char **argv) {
 
     unsigned int numNodes = par.nodeList->numNodes;
 
-    unsigned int numRes = par.elemTypeCount[cirStatement::STAT_RESISTANCE],
-                 numVolt= par.elemTypeCount[cirStatement::STAT_VOLTAGESOURCE];
+    unsigned int numRes = par.elemTypeCount[STAT_RESISTANCE],
+                 numVolt= par.elemTypeCount[STAT_VOLTAGESOURCE];
     unsigned int numDoFs = numNodes - 1 + numVolt;
     unsigned int indRes = 0, indVolt = 0;
 
@@ -41,7 +42,7 @@ main(int argc, char **argv) {
     for (unsigned int indElem = 0; indElem < par.elements.size(); indElem++) {
         Element elem = par.elements[indElem];
 
-        if (elem.elemType == cirStatement::STAT_RESISTANCE) {
+        if (elem.elemType == STAT_RESISTANCE) {
             std::string nodeStr1 = elem.nodeList[0],
                         nodeStr2 = elem.nodeList[1];
             unsigned int node1 = par.nodeList->mapStringNode[nodeStr1],
@@ -67,7 +68,7 @@ main(int argc, char **argv) {
             }
 
             indRes++;
-        } else if (elem.elemType == cirStatement::STAT_VOLTAGESOURCE) {
+        } else if (elem.elemType == STAT_VOLTAGESOURCE) {
             std::string nodeStr1 = elem.nodeList[0],
                         nodeStr2 = elem.nodeList[1];
             unsigned int node1 = par.nodeList->mapStringNode[nodeStr1],

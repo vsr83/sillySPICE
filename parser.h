@@ -5,6 +5,7 @@
 #include "element.h"
 #include "nodeList.h"
 #include "value.h"
+#include "statements.h"
 
 #include <stdlib.h>
 
@@ -26,7 +27,7 @@ public:
 
     enum{ANALYSIS_DC_LIN, ANALYSIS_DC_DEC, ANALYSIS_DC_OCT};
     unsigned int analysisTypeDC, analysisDCnpoints;
-    std::string analysisDCvar;
+    std::string  analysisDCvar;
     double analysisDCstartValue, analysisDCendValue, analysisDCinc;
 
     enum{ANALYSIS_AC_LIN, ANALYSIS_AC_DEC, ANALYSIS_AC_OCT};

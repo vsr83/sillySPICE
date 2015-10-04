@@ -8,6 +8,7 @@
 
 #include "cirFile.h"
 #include "value.h"
+#include "statements.h"
 
 class Element {
 public:
