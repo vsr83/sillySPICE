@@ -116,13 +116,13 @@ main(int argc, char **argv) {
     top.disp();
 
     /*      0      1
-     *  (0) => (1) => (2)    (0) -- (1) ++ (2)
-     * 2 |    3 I    4 |             -
-     *   v  5   v  6   v             -
-     *  (3) => (4) => (5)    (3) -- [4] ++ (5)
-     * 7 I    8 I    9 I      +      +      +
-     *   v      v      v      +      +      +
-     *  (6) -> (7) -> (8)    (6)    (7)    (8)
+     *  (0) => (1) => (2)    (0) -- (1) ++ (2)     2  --  1  --  2
+     * 2 |    3 I    4 |             -                    |
+     *   v  5   v  6   v             -                    |
+     *  (3) => (4) => (5)    (3) -- [4] ++ (5)     1  --  0  --  1
+     * 7 I    8 I    9 I      +      +      +      |      |      |
+     *   v      v      v      +      +      +      |      |      |
+     *  (6) -> (7) -> (8)    (6)    (7)    (8)     2      1      2
      *      10     11
      */
 
@@ -151,6 +151,11 @@ main(int argc, char **argv) {
         std::cout << link.globInd << " " << link.dir << std::endl;
     }
     std::cout << "numTraversed: " << numTraversed << std::endl;
+
+    for (unsigned int indNode=0; indNode < dist.size(); indNode++) {
+        std::cout << top.mapNodeString[indNode] << " d="
+                  << dist[indNode] << std::endl;
+    }
 }
 #endif
 
