@@ -9,6 +9,16 @@ Parser::Parser(std::vector<cirStatement> &statList) {
     for (unsigned int indStat = 0; indStat < statList.size(); indStat++) {
         cirStatement stat = statList[indStat];
 
+        if (stat.strList.size()-1 < statements[stat.type].minArg
+         || stat.strList.size()-1 > statements[stat.type].maxArg) {
+            std::cerr << "Invalid number of arguments " << stat.strList.size() << " with"
+                      << statements[stat.type].statStr << " "
+                      << statements[stat.type].minArg << " - " << statements[stat.type].maxArg
+                      << " required!" << std::endl;
+            exit(-1);
+        }
+
+
         std::cout << indStat << ": \"" << stat.strList[0] << "\""
                   << " class=" << stat.statClass
                   << " type=" << stat.type

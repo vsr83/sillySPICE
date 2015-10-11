@@ -15,6 +15,7 @@ NodeList::NodeList(std::set<std::string> &_nodeStrings) {
 NodeList::NodeList(const NodeList &nodeList) {
     mapNodeString = nodeList.mapNodeString;
     mapStringNode = nodeList.mapStringNode;
+    numNodes      = nodeList.numNodes;
 }
 
 void
@@ -40,6 +41,7 @@ NodeList::parseSet(std::set<std::string> &_nodeStrings) {
     }
     assert(gndFound);
     numNodes = mapNodeString.size();
+//    std::cout << numNodes << std::endl;
 }
 
 void

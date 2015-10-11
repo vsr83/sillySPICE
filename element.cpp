@@ -1,4 +1,12 @@
+// Elements can have more than two nodes, whereas branches in a graph have
+// two nodes.
+
 #include "element.h"
+
+Element::Element() {
+    elemType = STAT_EMPTY;
+    elemClass = CLASS_EMPTY;
+}
 
 Element::Element(const cirStatement &stat) {
     elemType  = stat.type;

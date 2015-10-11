@@ -12,6 +12,7 @@
 
 class Element {
 public:
+    Element();
     Element(const cirStatement &stat);
     ~Element();
 

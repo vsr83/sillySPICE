@@ -67,13 +67,6 @@ cirStatement::cirStatement(std::string &rawString) {
             std::cerr << "Unknown statement type \"" << first << "\"!" << std::endl;
             exit(-1);
         }
-        if (strList.size()-1 < statements[type].minArg || strList.size()-1 > statements[type].maxArg) {
-            std::cerr << "Invalid number of arguments " << strList.size() << " with"
-                      << statements[type].statStr << " "
-                      << statements[type].minArg << " - " << statements[type].maxArg
-                      << " required!" << std::endl;
-            exit(-1);
-        }
         if (!statements[type].implemented) {
             std::cerr << "Statement \"" << statements[type].statStr << "\" not implemented!" << std::endl;
             exit(-1);
@@ -137,7 +130,7 @@ cirFile::cirFile(const std::string &_fileName) {
         } else if (stat.type != STAT_EMPTY && stat.type != STAT_COMMENT) {
             statList.push_back(stat);
         }
-    }
+    }    
 }
 
 cirFile::~cirFile() {
