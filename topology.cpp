@@ -1,7 +1,7 @@
 #include "topology.h"
 
 Topology::Topology(NodeList &_nodeList) : NodeList(_nodeList) {
-    std::cout << numNodes << std::endl;
+    //std::cout << numNodes << std::endl;
     for (unsigned int indNode = 0; indNode < numNodes; indNode++) {
         std::list<Link> ll;
         edges.push_back(ll);
@@ -16,7 +16,7 @@ Topology::addEdge(unsigned int node1, unsigned int node2, unsigned int globInd) 
     assert(edges.size() >= node1);
     assert(edges.size() >= node2);
 
-    std::cout << node1 << " " << node2 << std::endl;
+    // For each graph edge, add two Link-objects. See topology.h for explanation.
 
     Link link1(node1, node2, 1, globInd);
     Link link2(node2, node1, -1, globInd);
@@ -52,7 +52,7 @@ Topology::BFS(std::vector<int> &dist,
         unsigned int node = nodeQueue.front();
         nodeQueue.pop();
 
-        std::cout << mapNodeString[node] << "-" << _dist[node] << std::endl;
+        // std::cout << mapNodeString[node] << "-" << _dist[node] << std::endl;
 
         std::list<Link> llist = edges[node];
         for (std::list<Link>::iterator it=llist.begin(); it!=llist.end(); ++it) {
@@ -102,15 +102,20 @@ Topology::dispEdges() {
 int
 main(int argc, char **argv) {
     std::set<std::string> strset;
-    strset.insert(std::string("0"));
-    strset.insert(std::string("1"));
-    strset.insert(std::string("2"));
-    strset.insert(std::string("3"));
-    strset.insert(std::string("4"));
-    strset.insert(std::string("5"));
-    strset.insert(std::string("6"));
-    strset.insert(std::string("7"));
-    strset.insert(std::string("8"));
+    // Note that std::string has a constructor for const char *.
+    // Thus, when strset.insert is called with an argument of type const char *,
+    // the argument is first passed to a constructor std::string and the
+    // resulting object is then passed to strset.insert.
+
+    strset.insert("0");
+    strset.insert("1");
+    strset.insert("2");
+    strset.insert("3");
+    strset.insert("4");
+    strset.insert("5");
+    strset.insert("6");
+    strset.insert("7");
+    strset.insert("8");
     NodeList nl(strset);
     Topology top(nl);
     top.disp();
@@ -164,15 +169,15 @@ main(int argc, char **argv) {
 int
 main(int argc, char **argv) {
     std::set<std::string> strset;
-    strset.insert(std::string("0"));
-    strset.insert(std::string("s"));
-    strset.insert(std::string("t"));
-    strset.insert(std::string("u"));
+    strset.insert("0");
+    strset.insert("s");
+    strset.insert("t");
+    strset.insert("u");
 
-    strset.insert(std::string("v"));
-    strset.insert(std::string("w"));
-    strset.insert(std::string("x"));
-    strset.insert(std::string("y"));
+    strset.insert("v");
+    strset.insert("w");
+    strset.insert("x");
+    strset.insert("y");
     NodeList nl(strset);
     Topology top(nl);
     top.disp();
@@ -185,16 +190,16 @@ main(int argc, char **argv) {
      *               4      8
      */
 
-    top.addEdge(std::string("0"), std::string("v"), 0);
-    top.addEdge(std::string("0"), std::string("s"), 1);
-    top.addEdge(std::string("s"), std::string("w"), 2);
-    top.addEdge(std::string("w"), std::string("t"), 3);
-    top.addEdge(std::string("w"), std::string("x"), 4);
-    top.addEdge(std::string("t"), std::string("x"), 5);
-    top.addEdge(std::string("t"), std::string("u"), 6);
-    top.addEdge(std::string("x"), std::string("u"), 7);
-    top.addEdge(std::string("x"), std::string("y"), 8);
-    top.addEdge(std::string("u"), std::string("y"), 9);
+    top.addEdge("0", "v", 0);
+    top.addEdge("0", "s", 1);
+    top.addEdge("s", "w", 2);
+    top.addEdge("w", "t", 3);
+    top.addEdge("w", "x", 4);
+    top.addEdge("t", "x", 5);
+    top.addEdge("t", "u", 6);
+    top.addEdge("x", "u", 7);
+    top.addEdge("x", "y", 8);
+    top.addEdge("u", "y", 9);
 
     top.dispEdges();
 
