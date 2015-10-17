@@ -9,6 +9,7 @@ Parser::Parser(std::vector<cirStatement> &statList) {
     for (unsigned int indStat = 0; indStat < statList.size(); indStat++) {
         cirStatement stat = statList[indStat];
 
+        // Check the number of arguments given for each statement.
         if (stat.strList.size()-1 < statements[stat.type].minArg
          || stat.strList.size()-1 > statements[stat.type].maxArg) {
             std::cerr << "Invalid number of arguments " << stat.strList.size() << " with"
@@ -18,12 +19,12 @@ Parser::Parser(std::vector<cirStatement> &statList) {
             exit(-1);
         }
 
-
         std::cout << indStat << ": \"" << stat.strList[0] << "\""
                   << " class=" << stat.statClass
                   << " type=" << stat.type
                   << std::endl;
 
+        // Parse circuit elements and circuit nodes from the statement.
         if (stat.statClass == CLASS_PASSIVE || stat.statClass == CLASS_SOURCE) {
             Element elem(stat);
             elements.push_back(elem);
@@ -33,6 +34,7 @@ Parser::Parser(std::vector<cirStatement> &statList) {
             }
         }
 
+        // Parse analysis statement.
         if (stat.statClass == CLASS_ANALYSIS) {
             switch(stat.type) {
             case STAT_ANALYSISDC:
@@ -80,7 +82,55 @@ Parser::Parser(std::vector<cirStatement> &statList) {
             }
         }
     }
+
+    // Create a node list and count the number of elements with each type.
     nodeList = new NodeList(nodeSet);
+    for (unsigned int elemInd = 0; elemInd < elements.size(); elemInd++) {
+        Element elem = elements[elemInd];
+
+        if (elemTypeCount.find(elem.elemType) == elemTypeCount.end()) {
+            elemTypeCount[elem.elemType] = 1;
+        } else {
+            elemTypeCount[elem.elemType]++;
+        }
+
+        std::cout << "Element " << elemInd << " \"" << elem.name << "\""<< " :";
+        for (unsigned int nodeInd = 0; nodeInd < elem.nodeList.size(); nodeInd++) {
+            std::cout << "\"" << elem.nodeList[nodeInd] << "\"/"
+                      << nodeList->mapStringNode[elem.nodeList[nodeInd]] << ", ";
+        }
+        std::cout << elemTypeCount[elem.elemType];
+        std::cout << std::endl;
+    }
+
+    nodeList->disp();
+
+    // Check topology of the circuit:
+    topology = new Topology(*nodeList);
+
+    for (unsigned int indElem = 0; indElem < elements.size(); indElem++) {
+        Element elem = elements[indElem];
+        assert(elem.nodeList.size() == 2);
+
+        topology->addEdge(elem.nodeList[0], elem.nodeList[1], indElem);
+    }
+
+    std::vector<int> dist, parent;
+    unsigned int numTraversed;
+    topology->BFS(dist, parent, spanningTree, numTraversed, 0);
+
+    std::cout << "Topology: " << nodeList->numNodes << " nodes, "
+              << numTraversed << " traversed" << std::endl;
+    if (nodeList->numNodes != numTraversed && nodeList->numNodes > 1) {
+        for (unsigned int indNode = 1; indNode < nodeList->numNodes; indNode++) {
+            if (dist[indNode] == -1) {
+                std::cerr << "Node " << nodeList->mapNodeString[indNode]
+                          << " is floating!" << std::endl;
+            }
+        }
+        exit(-1);
+    }
+
 
     std::cout << "Analysis Type: ";
     switch (analysisType) {
@@ -117,30 +167,13 @@ Parser::Parser(std::vector<cirStatement> &statList) {
         break;
     }
 
-    for (unsigned int elemInd = 0; elemInd < elements.size(); elemInd++) {
-        Element elem = elements[elemInd];
-
-        if (elemTypeCount.find(elem.elemType) == elemTypeCount.end()) {
-            elemTypeCount[elem.elemType] = 1;
-        } else {
-            elemTypeCount[elem.elemType]++;
-        }
-
-        std::cout << "Element " << elemInd << " \"" << elem.name << "\""<< " :";
-        for (unsigned int nodeInd = 0; nodeInd < elem.nodeList.size(); nodeInd++) {
-            std::cout << "\"" << elem.nodeList[nodeInd] << "\"/"
-                      << nodeList->mapStringNode[elem.nodeList[nodeInd]] << ", ";
-        }
-        std::cout << elemTypeCount[elem.elemType];
-        std::cout << std::endl;
-    }
-
-    nodeList->disp();
 }
 
 Parser::~Parser() {
     delete nodeList;
     nodeList = 0;
+    delete topology;
+    topology = 0;
 }
 
 #ifdef PARSE_TEST

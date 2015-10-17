@@ -18,7 +18,6 @@
 // positive distances. Thereafter, floating nodes are exactly the nodes not
 // reached by VFS.
 
-
 // Each edge in the graph corresponds to two Link-objects, where dir = 1 holds
 // when the direction of the link agrees with the original edge and dir = -1
 // otherwise.
