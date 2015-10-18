@@ -22,6 +22,12 @@ public:
 
     // Circuit elemnts and the count of elements.
     std::vector <Element> elements;
+    std::map <std::string, unsigned int> mapNameElem;
+    // Names of the elements, which require branch their current as additional
+    // degree of freedom.
+    std::map <std::string, unsigned int> refElements;
+    unsigned int numRefBranches;
+
     std::map <unsigned int, unsigned int> elemTypeCount;
     // The set of node names and the mappings between node names and node
     // indices.

@@ -12,15 +12,13 @@ Assembly::Assembly(Parser *_parser) {
                  numVCVS = parser->elemTypeCount[STAT_VCVS],
                  numCCVS = parser->elemTypeCount[STAT_CCVS];
 
-    unsigned int numNodes = parser->nodeList->numNodes;
-
-    numDoF = numNodes - 1 + numVolt + numCur + numVCVS + numCCVS*2 ;
+    numNodes = parser->nodeList->numNodes;
+    numDoF = numNodes - 1 + numVolt + numVCVS + numCCVS*2 ;
 
     // When the degrees of freedom are complex-valued, the real and imaginary
     // parts of the DoF are included as separate degrees of freedom in the
     // system matrix and excitation vectors.
 
-    double *systemExcitation;
     if (parser->analysisType == Parser::ANALYSIS_AC) {
         complex = true;
 
@@ -34,17 +32,42 @@ Assembly::Assembly(Parser *_parser) {
         complex = false;
 
         fullMNA = new Matrix(numDoF+1, numDoF+1);
-        fullExcitation = new double[numNodes+1];
+        fullExcitation = new double[numDoF+1];
 
-        for (unsigned indDoF = 0; indDoF < numNodes; indDoF++) {
+        for (unsigned indDoF = 0; indDoF < numDoF+1; indDoF++) {
            fullExcitation[indDoF] = 0;
         }
     }
 
+    if (complex) {
+        buildComplex();
+        exit(-1);
+    } else {
+        buildReal();
+    }
+
+    if (complex) {
+        std::cerr << "ASSEMBLY : Complex solver not implemented!" << std::endl;
+        exit(-1);
+    } else {
+        systemMNA = fullMNA->submatrix(1, numDoF, 1, numDoF);
+
+        systemExcitation = new double[numDoF];
+        for (unsigned indDoF = 0; indDoF < numDoF; indDoF++) {
+            systemExcitation[indDoF] = fullExcitation[indDoF + 1];
+        }
+    }
+
+}
+
+void
+Assembly::buildReal() {
     // indSource is used as the index for additional DoFs due to sources in
     // the MNA formulation.
 
     unsigned int indRes= 0, indSource = 0;
+
+    std::cout << std::endl << "Assembly:" << std::endl;
 
     for (unsigned int indElem = 0; indElem < parser->elements.size(); indElem++) {
         Element elem = parser->elements[indElem];
@@ -90,6 +113,9 @@ Assembly::Assembly(Parser *_parser) {
             indSource++;
         } break;
         case STAT_CURRENTSOURCE: {
+            // Current sources are "natural" for nodal analysis and thus do
+            // not introduce additional degrees of freedom.
+
             double currValue = elem.valueList[0];
             fullExcitation[node1] += currValue;
             fullExcitation[node2] -= currValue;
@@ -97,20 +123,51 @@ Assembly::Assembly(Parser *_parser) {
         case STAT_VCVS: {
 
         } break;
+        case STAT_CCCS: {
+
+        } break;
+        case STAT_VCCS: {
+
+        } break;
+        case STAT_CCVS: {
+
+        }
         default:
             std::cerr << "ASSEMBLY : Unknown Element Type!" << std::endl;
             exit(-1);
             break;
         }
     }
-    systemMNA = fullMNA->submatrix(1, numDoF, 1, numDoF);
+}
+
+void
+Assembly::buildComplex() {
+
 }
 
 Assembly::~Assembly() {
     delete systemMNA;
     delete [] systemExcitation;
+    delete fullMNA;
+    delete [] fullExcitation;
+
     systemMNA = 0;
     systemExcitation = 0;
+    fullMNA = 0;
+    fullExcitation = 0;
+}
+
+double *
+Assembly::solve() {
+    Matrix L(numDoF, numDoF);
+    Matrix U(numDoF, numDoF);
+    Matrix P(numDoF, numDoF);
+
+    double * sol;
+    systemMNA->LU(L, U, P);
+    sol = systemMNA->LU_solve(L, U, P, systemExcitation);
+
+    return sol;
 }
 
 #ifdef ASSEMBLY_TEST
@@ -126,15 +183,28 @@ main(int argc, char **argv) {
     }
 
     cirFile cir(fileName);
+    std::cout << std::endl << "DC Analysis of resistive circuit: \""
+              << cir.title << "\"" << std::endl;
     Parser parser(cir.statList);
     Assembly ass(&parser);
 
+    std::cout << std::endl << "Full Matrix:" << std::endl;
     ass.fullMNA->disp();
+    std::cout << std::endl << "System Matrix:" << std::endl;
     ass.systemMNA->disp();
 
+    std::cout << std::endl << "Excitation Vector:" << std::endl;
+    for (unsigned int ind = 0; ind < ass.numDoF; ind++) {
+        std::cout << ass.systemExcitation[ind] << " ";
+    }
+    std::cout << std::endl;
 
-    std::cout << std::endl << "DC Analysis of resistive circuit: \""
-              << cir.title << "\"" << std::endl;
+    std::cout << std::endl << "Solution:" << std::endl;
+    double *sol = ass.solve();
+    for (unsigned int ind = 0; ind < ass.numDoF; ind++) {
+        std::cout << sol[ind] << " ";
+    }
+    std::cout << std::endl;
 
     unsigned int numNodes = parser.nodeList->numNodes;
 }

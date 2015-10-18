@@ -13,34 +13,91 @@ Element::Element(const cirStatement &stat) {
     elemClass = stat.statClass;
     name  = stat.strList[0];
 
+    std::vector <std::string> strList = stat.strList;
+
     assert(elemClass == CLASS_SOURCE || elemClass == CLASS_PASSIVE
            || elemClass == CLASS_NONLINEAR);
 
     switch (elemClass) {
     case CLASS_PASSIVE:
     {
-        assert(stat.strList.size() == 4);
+        assert(strList.size() == 4);
 
-        nodeList.push_back(stat.strList[1]);
-        nodeList.push_back(stat.strList[2]);
-        Value val(stat.strList[3]);
+        nodeList.push_back(strList[1]);
+        nodeList.push_back(strList[2]);
+        Value val(strList[3]);
         valueList.push_back(val.val);
     }
         break;
     case CLASS_SOURCE:
     {
-        assert(stat.strList.size() == 4 || stat.strList.size() == 5);
+        switch (elemType) {
+        case STAT_VOLTAGESOURCE: {
+            assert(strList.size() == 4 || strList.size() == 5);
 
-        nodeList.push_back(stat.strList[1]);
-        nodeList.push_back(stat.strList[2]);
+            nodeList.push_back(strList[1]);
+            nodeList.push_back(strList[2]);
 
-        if (stat.strList.size() == 4) {
-            Value val(stat.strList[3]);
-            valueList.push_back(val.val);
-        } else {
-            typeList.push_back(stat.strList[3]);
-            Value val(stat.strList[4]);
-            valueList.push_back(val.val);
+            if (strList.size() == 4) {
+                Value val(strList[3]);
+                valueList.push_back(val.val);
+            } else {
+                typeList.push_back(strList[3]);
+                Value val(strList[4]);
+                valueList.push_back(val.val);
+            }
+        } break;
+        case STAT_CURRENTSOURCE: {
+            assert(strList.size() == 4 || strList.size() == 5);
+
+            nodeList.push_back(strList[1]);
+            nodeList.push_back(strList[2]);
+
+            if (strList.size() == 4) {
+                Value val(strList[3]);
+                valueList.push_back(val.val);
+            } else {
+                typeList.push_back(strList[3]);
+                Value val(strList[4]);
+                valueList.push_back(val.val);
+            }
+        } break;
+        case STAT_CCCS: {
+            assert(strList.size() == 5);
+            nodeList.push_back(strList[1]); // +n
+            nodeList.push_back(strList[2]); // -n
+            elemList.push_back(strList[3]); // ref elem
+            Value val(strList[4]);
+            valueList.push_back(val.val);   // gain
+        } break;
+        case STAT_CCVS: {
+            assert(strList.size() == 5);
+            nodeList.push_back(strList[1]); // +n
+            nodeList.push_back(strList[2]); // -n
+            elemList.push_back(strList[3]); // ref elem
+            Value val(strList[4]);
+            valueList.push_back(val.val);   // gain
+        } break;
+        case STAT_VCVS: {
+            assert(strList.size() == 6);
+            nodeList.push_back(strList[1]); // +n
+            nodeList.push_back(strList[2]); // -n
+            nodeList.push_back(strList[3]); // +c
+            nodeList.push_back(strList[4]); // -c
+            Value val(strList[5]);
+            valueList.push_back(val.val);   // gain
+        } break;
+        case STAT_VCCS: {
+            assert(strList.size() == 6);
+            nodeList.push_back(strList[1]); // +n
+            nodeList.push_back(strList[2]); // -n
+            nodeList.push_back(strList[3]); // +c
+            nodeList.push_back(strList[4]); // -c
+            Value val(strList[5]);
+            valueList.push_back(val.val);   // gain
+        } break;
+        default:
+            break;
         }
     }
         break;

@@ -6,8 +6,16 @@ Parser::Parser(std::vector<cirStatement> &statList) {
 
     std::cout << "Parsing Statements:" << std::endl;
 
+
+    numRefBranches = 0;
+
     for (unsigned int indStat = 0; indStat < statList.size(); indStat++) {
         cirStatement stat = statList[indStat];
+
+        std::cout << indStat << ": \"" << stat.strList[0] << "\""
+                  << " class=" << stat.statClass
+                  << " type=" << stat.type
+                  << std::endl;
 
         // Check the number of arguments given for each statement.
         if (stat.strList.size()-1 < statements[stat.type].minArg
@@ -19,16 +27,26 @@ Parser::Parser(std::vector<cirStatement> &statList) {
             exit(-1);
         }
 
-        std::cout << indStat << ": \"" << stat.strList[0] << "\""
-                  << " class=" << stat.statClass
-                  << " type=" << stat.type
-                  << std::endl;
-
         // Parse circuit elements and circuit nodes from the statement.
-        if (stat.statClass == CLASS_PASSIVE || stat.statClass == CLASS_SOURCE) {
+        if (stat.statClass == CLASS_PASSIVE) {
             Element elem(stat);
             elements.push_back(elem);
+            mapNameElem[stat.strList[0]] = elements.size()-1;
 
+            for (unsigned int indNode = 0; indNode < elem.nodeList.size(); indNode++) {
+                nodeSet.insert(elem.nodeList[indNode]);
+            }
+        }
+        if (stat.statClass == CLASS_SOURCE) {
+            Element elem(stat);
+            mapNameElem[stat.strList[0]] = elements.size();
+            elements.push_back(elem);
+
+            // Extract the names of reference branches.
+            if (stat.type == STAT_CCCS || stat.type == STAT_CCVS) {
+                refElements[elem.elemList[0]] = numRefBranches;
+                numRefBranches++;
+            }
             for (unsigned int indNode = 0; indNode < elem.nodeList.size(); indNode++) {
                 nodeSet.insert(elem.nodeList[indNode]);
             }
@@ -83,8 +101,40 @@ Parser::Parser(std::vector<cirStatement> &statList) {
         }
     }
 
-    // Create a node list and count the number of elements with each type.
     nodeList = new NodeList(nodeSet);
+
+
+    std::cout << std::endl << "Element Reference Mapping:" << std::endl;
+
+    // Create dummy nodes and elements.
+    for (std::map<std::string, unsigned int>::iterator it=refElements.begin();
+         it != refElements.end(); ++it) {
+        std::string  name    = it->first;
+        unsigned int elemInd = it->second;
+        std::cout << "REF " << name << "->" << elemInd << std::endl;
+
+        assert(elemInd < elements.size());
+        unsigned int nodeDummyInd = nodeList->addNode();
+        std::cout << nodeDummyInd << std::endl;
+        std::string  nodeDummyStr = nodeList->mapNodeString[nodeDummyInd];
+
+        Element elem = elements[elemInd];
+        std::string oldNodeStr = elem.nodeList[0];
+        elem.nodeList[0] = nodeDummyStr;
+        elements[elemInd] = elem;
+
+        std::stringstream ss;
+        ss << "Vd" << nodeDummyStr << " " << oldNodeStr << " " << nodeDummyStr << " 0";
+        std::string s = ss.str();
+        std::cout << s << std::endl;
+        cirStatement stat(s);
+        Element newElem(stat);
+        elements.push_back(newElem);
+    }
+
+
+    std::cout << std::endl << "Element List:" << std::endl;
+    // Create a node list and count the number of elements with each type.
     for (unsigned int elemInd = 0; elemInd < elements.size(); elemInd++) {
         Element elem = elements[elemInd];
 
@@ -103,6 +153,19 @@ Parser::Parser(std::vector<cirStatement> &statList) {
         std::cout << std::endl;
     }
 
+    std::cout << std::endl << "Element Mapping:" << std::endl;
+    // Element list:
+    for (std::map<std::string, unsigned int>::iterator it=mapNameElem.begin();
+         it != mapNameElem.end(); ++it) {
+        std::string  name    = it->first;
+        unsigned int elemInd = it->second;
+        std::cout << "  " << name << "->" << elemInd << std::endl;
+
+    }
+
+
+    std::cout << std::endl << "Node List:" << std::endl;
+
     nodeList->disp();
 
     // Check topology of the circuit:
@@ -119,7 +182,7 @@ Parser::Parser(std::vector<cirStatement> &statList) {
     unsigned int numTraversed;
     topology->BFS(dist, parent, spanningTree, numTraversed, 0);
 
-    std::cout << "Topology: " << nodeList->numNodes << " nodes, "
+    std::cout << std::endl << "Topology: " << nodeList->numNodes << " nodes, "
               << numTraversed << " traversed" << std::endl;
     if (nodeList->numNodes != numTraversed && nodeList->numNodes > 1) {
         for (unsigned int indNode = 1; indNode < nodeList->numNodes; indNode++) {

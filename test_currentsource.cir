@@ -1,0 +1,7 @@
+SIMPLE CIRCUIT
+R1   1 0 1
+R2   1 0 1
+IDC 1 0 1
+*FOOOBAR
+.dc vin 0 1 2
+.end

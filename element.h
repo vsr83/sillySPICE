@@ -19,6 +19,7 @@ public:
     unsigned int elemType, elemClass;
     std::string name;
     std::vector <std::string> nodeList;
+    std::vector <std::string> elemList;
     std::vector <std::string> typeList;
     std::vector <double> valueList;
 };

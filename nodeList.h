@@ -21,6 +21,10 @@ public:
 
     ~NodeList();
 
+    // Addition of dummy nodes is often necessary with controlled sources.
+    bool nodeExists(std::string &nodeStr);
+    unsigned int addNode(std::string &nodeStr);
+    unsigned int addNode();
     void disp();
 
     std::map <std::string, unsigned int> mapStringNode;

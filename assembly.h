@@ -23,7 +23,7 @@
  * Note that transient and non-linear solution procedures can be implemented
  * with companion models so that the solution process reduces to the solution
  * of a sequence of DC circuits. Thus, this class implements the basic
- * building block in all solution processes.
+ * building block used in all solution processes.
  *
  * In this class, the circuits are assumed to contain only real- or complex-
  * valued conductances, controlled sources and independent sources.
@@ -34,8 +34,9 @@ public:
     Assembly(Parser *_parser);
     ~Assembly();
 
+    double * solve();
+
     bool complex;              // Are the DoFs complex?
-//private:
     unsigned int numDoF;
     Matrix *systemMNA;         // The system matrix.
     double *systemExcitation;  // The excitation vector.
@@ -52,6 +53,12 @@ public:
     Matrix *fullMNA;
     double *fullExcitation;
     Parser *parser;            // Parser constructed outside.
+
+private:
+    void buildReal();
+    void buildComplex();
+
+    unsigned int numNodes;
 };
 
 #endif // ASSEMBLY_H
