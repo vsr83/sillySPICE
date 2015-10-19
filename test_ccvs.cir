@@ -4,5 +4,5 @@ R1 2 1 1
 R2 0 2 1
 H1 2 0 V1 1
 *FOOOBAR
-.dc vDC 0 1 2
+.dc v1 0 1 2
 .end

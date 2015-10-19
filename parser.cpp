@@ -178,7 +178,7 @@ Parser::Parser(std::vector<cirStatement> &statList) {
 
     for (unsigned int indElem = 0; indElem < elements.size(); indElem++) {
         Element elem = elements[indElem];
-        assert(elem.nodeList.size() == 2);
+//        assert(elem.nodeList.size() == 2);
 
         topology->addEdge(elem.nodeList[0], elem.nodeList[1], indElem);
     }

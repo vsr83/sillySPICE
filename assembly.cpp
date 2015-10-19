@@ -137,11 +137,6 @@ Assembly::buildReal() {
         }
     }
 
-
-
-
-
-
     for (unsigned int indElem = 0; indElem < parser->elements.size(); indElem++) {
         Element elem = parser->elements[indElem];
 
@@ -158,7 +153,30 @@ Assembly::buildReal() {
         case STAT_CURRENTSOURCE: {
         } break;
         case STAT_VCVS: {
+            assert(elem.nodeList.size() >= 4);
 
+            std::string nodeStr3 = elem.nodeList[2],
+                        nodeStr4 = elem.nodeList[3];
+            std::cout << "VCVS " << nodeStr3 << " " << nodeStr4 << std::endl;
+            unsigned int node3 = parser->nodeList->mapStringNode[nodeStr3],
+                         node4 = parser->nodeList->mapStringNode[nodeStr4];
+
+
+
+            double gainValue = elem.valueList[0];
+
+            // v_1 - v_2 = gain*(v_3 - v_4)
+            fullMNA->set(numNodes + indSource, node1,  1);
+            fullMNA->set(numNodes + indSource, node2, -1);
+            fullMNA->addto(numNodes + indSource, node3, -gainValue);
+            fullMNA->addto(numNodes + indSource, node4, gainValue);
+
+            // Additional current into the node from the voltage source.
+            fullMNA->set(node1, numNodes + indSource, -1);
+            fullMNA->set(node2, numNodes + indSource, 1);
+
+            sourceDoFmap[elem.name] = numNodes + indSource;
+            indSource++;
         } break;
         case STAT_CCCS: {
             double gainValue = elem.valueList[0];
@@ -176,7 +194,19 @@ Assembly::buildReal() {
             fullMNA->addto(node2, refCurDoF, gainValue);
         } break;
         case STAT_VCCS: {
+            assert(elem.nodeList.size() >= 4);
+            std::string nodeStr3 = elem.nodeList[2],
+                        nodeStr4 = elem.nodeList[3];
+            unsigned int node3 = parser->nodeList->mapStringNode[nodeStr3],
+                         node4 = parser->nodeList->mapStringNode[nodeStr4];
 
+            double gainValue = elem.valueList[0];
+
+            // v_1 - v_2 = gain*(v_3 - v_4)
+            fullMNA->addto(node1, node3, gainValue);
+            fullMNA->addto(node1, node4, -gainValue);
+            fullMNA->addto(node2, node3, -gainValue);
+            fullMNA->addto(node2, node4, gainValue);
         } break;
         case STAT_CCVS: {
             double gainValue = elem.valueList[0];
