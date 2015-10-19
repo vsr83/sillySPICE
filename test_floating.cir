@@ -1,4 +1,4 @@
-SIMPLE CIRCUIT
+SIMPLE CIRCUIT WITH A FLOATING NODE
 R1   2 1 1
 VDC  1 0 1
 VDC2 2 3 2
@@ -6,5 +6,5 @@ R2   3 0 1
 R3   3 0 1
 R4   S4 S5 1
 *FOOOBAR
-.dc vin 0 1 2
+.dc VDC 0 1 2
 .end

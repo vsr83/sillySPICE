@@ -41,6 +41,8 @@ public:
     Matrix *systemMNA;         // The system matrix.
     double *systemExcitation;  // The excitation vector.
 
+    std::map <std::string, unsigned int> sourceDoFmap;
+
     // The system matrix systemMNA is extracted from the full (with the ground
     // node) matrix fullMNA by removal of the first row and column. By
     // construction of the matrix fullMNA first, the construction process

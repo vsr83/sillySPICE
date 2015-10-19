@@ -13,7 +13,7 @@ Assembly::Assembly(Parser *_parser) {
                  numCCVS = parser->elemTypeCount[STAT_CCVS];
 
     numNodes = parser->nodeList->numNodes;
-    numDoF = numNodes - 1 + numVolt + numVCVS + numCCVS*2 ;
+    numDoF = numNodes - 1 + numVolt + numVCVS + numCCVS;
 
     // When the degrees of freedom are complex-valued, the real and imaginary
     // parts of the DoF are included as separate degrees of freedom in the
@@ -108,8 +108,10 @@ Assembly::buildReal() {
             fullExcitation[numNodes + indSource] = voltValue;
 
             // Additional current into the node from the voltage source.
-            fullMNA->set(node1, numNodes + indSource,  1);
-            fullMNA->set(node2, numNodes + indSource, -1);
+            fullMNA->set(node1, numNodes + indSource, -1);
+            fullMNA->set(node2, numNodes + indSource, 1);
+
+            sourceDoFmap[elem.name] = numNodes + indSource;
             indSource++;
         } break;
         case STAT_CURRENTSOURCE: {
@@ -121,23 +123,94 @@ Assembly::buildReal() {
             fullExcitation[node2] -= currValue;
         } break;
         case STAT_VCVS: {
-
         } break;
         case STAT_CCCS: {
-
         } break;
         case STAT_VCCS: {
-
         } break;
         case STAT_CCVS: {
-
-        }
+        } break;
         default:
             std::cerr << "ASSEMBLY : Unknown Element Type!" << std::endl;
             exit(-1);
             break;
         }
     }
+
+
+
+
+
+
+    for (unsigned int indElem = 0; indElem < parser->elements.size(); indElem++) {
+        Element elem = parser->elements[indElem];
+
+        std::string nodeStr1 = elem.nodeList[0],
+                    nodeStr2 = elem.nodeList[1];
+        unsigned int node1 = parser->nodeList->mapStringNode[nodeStr1],
+                     node2 = parser->nodeList->mapStringNode[nodeStr2];
+
+        switch (elem.elemType) {
+        case STAT_RESISTANCE: {
+        } break;
+        case STAT_VOLTAGESOURCE: {
+        } break;
+        case STAT_CURRENTSOURCE: {
+        } break;
+        case STAT_VCVS: {
+
+        } break;
+        case STAT_CCCS: {
+            double gainValue = elem.valueList[0];
+            assert(elem.elemList.size() > 0);
+            // assert(parser->mapElemDummy.find(elem.elemList[0]) != parser->mapElemDummy.end());
+            //std::string dummyVSname = parser->mapElemDummy[elem.elemList[0]];
+
+            std::string dummyVSname  = elem.elemList[0];
+            if (sourceDoFmap.find(dummyVSname) == sourceDoFmap.end()) {
+                std::cerr << "Unknown source: \"" << dummyVSname << "\"" << std::endl;
+                exit(-1);
+            }
+            unsigned int refCurDoF = sourceDoFmap[dummyVSname];
+            fullMNA->addto(node1, refCurDoF, -gainValue);
+            fullMNA->addto(node2, refCurDoF, gainValue);
+        } break;
+        case STAT_VCCS: {
+
+        } break;
+        case STAT_CCVS: {
+            double gainValue = elem.valueList[0];
+            assert(elem.elemList.size() > 0);
+
+            std::string dummyVSname  = elem.elemList[0];
+            if (sourceDoFmap.find(dummyVSname) == sourceDoFmap.end()) {
+                std::cerr << "Unknown source: \"" << dummyVSname << "\"" << std::endl;
+                exit(-1);
+            }
+            unsigned int refCurDoF = sourceDoFmap[dummyVSname];
+            fullMNA->addto(node1, refCurDoF, -gainValue);
+
+            // v_1 - v_2 = voltValue
+            fullMNA->set(numNodes + indSource, node1,  1);
+            fullMNA->set(numNodes + indSource, node2, -1);
+            fullMNA->set(numNodes + indSource, refCurDoF, -gainValue);
+
+            // Additional current into the node from the voltage source.
+            fullMNA->set(node1, numNodes + indSource, -1);
+            fullMNA->set(node2, numNodes + indSource, 1);
+
+            sourceDoFmap[elem.name] = numNodes + indSource;
+            indSource++;
+        }break;
+        default:
+            std::cerr << "ASSEMBLY : Unknown Element Type! " << elem.elemType << std::endl;
+            exit(-1);
+            break;
+        }
+    }
+
+
+
 }
 
 void

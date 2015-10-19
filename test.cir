@@ -13,5 +13,5 @@ R5
 + 3
 VDC 1 0 5 
 *FOOOBAR
-.dc vin 0 1 2
+.dc vDC 0 1 2
 .end

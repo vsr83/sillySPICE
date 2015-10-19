@@ -43,10 +43,10 @@ Parser::Parser(std::vector<cirStatement> &statList) {
             elements.push_back(elem);
 
             // Extract the names of reference branches.
-            if (stat.type == STAT_CCCS || stat.type == STAT_CCVS) {
+/*            if (stat.type == STAT_CCCS || stat.type == STAT_CCVS) {
                 refElements[elem.elemList[0]] = numRefBranches;
                 numRefBranches++;
-            }
+            }*/
             for (unsigned int indNode = 0; indNode < elem.nodeList.size(); indNode++) {
                 nodeSet.insert(elem.nodeList[indNode]);
             }
@@ -104,6 +104,7 @@ Parser::Parser(std::vector<cirStatement> &statList) {
     nodeList = new NodeList(nodeSet);
 
 
+    /*
     std::cout << std::endl << "Element Reference Mapping:" << std::endl;
 
     // Create dummy nodes and elements.
@@ -115,8 +116,8 @@ Parser::Parser(std::vector<cirStatement> &statList) {
 
         assert(elemInd < elements.size());
         unsigned int nodeDummyInd = nodeList->addNode();
-        std::cout << nodeDummyInd << std::endl;
         std::string  nodeDummyStr = nodeList->mapNodeString[nodeDummyInd];
+        std::cout << nodeDummyInd << " "  << nodeDummyStr << " " << std::endl;
 
         Element elem = elements[elemInd];
         std::string oldNodeStr = elem.nodeList[0];
@@ -127,11 +128,15 @@ Parser::Parser(std::vector<cirStatement> &statList) {
         ss << "Vd" << nodeDummyStr << " " << oldNodeStr << " " << nodeDummyStr << " 0";
         std::string s = ss.str();
         std::cout << s << std::endl;
+
         cirStatement stat(s);
         Element newElem(stat);
         elements.push_back(newElem);
-    }
 
+        mapElemDummy[name] = newElem.name;
+        std::cout << "mapElemDummy[\"" << name << "\"] = \"" << newElem.name << "\"" << std::endl;
+    }
+    */
 
     std::cout << std::endl << "Element List:" << std::endl;
     // Create a node list and count the number of elements with each type.
