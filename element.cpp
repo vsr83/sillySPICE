@@ -27,6 +27,7 @@ Element::Element(const cirStatement &stat) {
         nodeList.push_back(strList[2]);
         Value val(strList[3]);
         valueList.push_back(val.val);
+        assert(val.val != 0);
     }
         break;
     case CLASS_SOURCE:

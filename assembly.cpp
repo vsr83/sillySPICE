@@ -1,8 +1,11 @@
 #include "assembly.h"
 
-Assembly::Assembly(Parser *_parser) {
-    parser = _parser;
-    systemMNA = 0;
+Assembly::Assembly(Parser *_parser) : currentRe(_parser->elements.size(), 0),
+                                      currentIm(_parser->elements.size(), 0),
+                                      voltageRe(_parser->elements.size(), 0),
+                                      voltageIm(_parser->elements.size(), 0) {
+    parser           = _parser;
+    systemMNA        = 0;
     systemExcitation = 0;
 
     // Numbers of all permissible elements.
@@ -119,8 +122,8 @@ Assembly::buildReal() {
             // not introduce additional degrees of freedom.
 
             double currValue = elem.valueList[0];
-            fullExcitation[node1] += currValue;
-            fullExcitation[node2] -= currValue;
+            fullExcitation[node1] -= currValue;
+            fullExcitation[node2] += currValue;
         } break;
         case STAT_VCVS: {
         } break;
@@ -157,10 +160,11 @@ Assembly::buildReal() {
 
             std::string nodeStr3 = elem.nodeList[2],
                         nodeStr4 = elem.nodeList[3];
-            std::cout << "VCVS " << nodeStr3 << " " << nodeStr4 << std::endl;
             unsigned int node3 = parser->nodeList->mapStringNode[nodeStr3],
                          node4 = parser->nodeList->mapStringNode[nodeStr4];
 
+            std::cout << "VCVS " << nodeStr1 << " " << nodeStr2 << " "
+                      << nodeStr3 << " " << nodeStr4 << std::endl;
 
 
             double gainValue = elem.valueList[0];
@@ -218,11 +222,10 @@ Assembly::buildReal() {
                 exit(-1);
             }
             unsigned int refCurDoF = sourceDoFmap[dummyVSname];
-            fullMNA->addto(node1, refCurDoF, -gainValue);
 
             // v_1 - v_2 = voltValue
-            fullMNA->set(numNodes + indSource, node1,  1);
-            fullMNA->set(numNodes + indSource, node2, -1);
+            fullMNA->set(numNodes + indSource, node1, -1);
+            fullMNA->set(numNodes + indSource, node2, 1);
             fullMNA->set(numNodes + indSource, refCurDoF, -gainValue);
 
             // Additional current into the node from the voltage source.
@@ -273,6 +276,107 @@ Assembly::solve() {
     return sol;
 }
 
+void
+Assembly::postProc(double *sol) {
+    for (unsigned int indElem = 0; indElem < parser->elements.size(); indElem++) {
+        Element elem = parser->elements[indElem];
+
+        assert(elem.nodeList.size() >= 2);
+        std::string nodeStr1 = elem.nodeList[0],
+                    nodeStr2 = elem.nodeList[1];
+        unsigned int node1 = parser->nodeList->mapStringNode[nodeStr1],
+                     node2 = parser->nodeList->mapStringNode[nodeStr2];
+
+        assert(node1 <= numNodes);
+        assert(node2 <= numNodes);
+
+        double val1 = 0, val2 = 0;
+        if (node1 > 0) {
+            val1 = sol[node1 - 1];
+        }
+        if (node2 > 0) {
+            val2 = sol[node2 - 1];
+        }
+        voltageRe[indElem] = val1 - val2;
+
+        switch(elem.elemType) {
+        case STAT_RESISTANCE:
+            currentRe[indElem] = voltageRe[indElem]/elem.valueList[0];
+            break;
+        case STAT_VOLTAGESOURCE: {
+            if (sourceDoFmap.find(elem.name) == sourceDoFmap.end()) {
+                std::cerr << "Unknown source: \"" << elem.name << "\"" << std::endl;
+                exit(-1);
+            }
+            unsigned int dof = sourceDoFmap[elem.name];
+            assert(dof > 0);
+            std::cout << elem.name << "->" << dof-1 << std::endl;
+            currentRe[indElem] = -sol[dof-1];
+        }
+            break;
+        case STAT_CURRENTSOURCE:
+            currentRe[indElem] = elem.valueList[0];
+            break;
+        case STAT_VCVS: {
+            if (sourceDoFmap.find(elem.name) == sourceDoFmap.end()) {
+                std::cerr << "Unknown source: \"" << elem.name << "\"" << std::endl;
+                exit(-1);
+            }
+            unsigned int dof = sourceDoFmap[elem.name];
+            assert(dof > 0);
+            currentRe[indElem] = -sol[dof-1];
+        }
+            break;
+        case STAT_VCCS: {
+            assert(elem.valueList.size() >= 1);
+            double gainValue = elem.valueList[0];
+            assert(elem.nodeList.size() >= 4);
+
+            std::string nodeStr3 = elem.nodeList[2],
+                        nodeStr4 = elem.nodeList[3];
+            unsigned int node3 = parser->nodeList->mapStringNode[nodeStr3],
+                         node4 = parser->nodeList->mapStringNode[nodeStr4];
+
+            currentRe[indElem] = gainValue*(sol[node3-1] - sol[node4-1]);
+        }
+            break;
+        case STAT_CCVS: {
+            if (sourceDoFmap.find(elem.name) == sourceDoFmap.end()) {
+                std::cerr << "Unknown source: \"" << elem.name << "\"" << std::endl;
+                exit(-1);
+            }
+            unsigned int dof = sourceDoFmap[elem.name];
+            std::cout << dof << std::endl;
+            assert(dof > 0);
+            currentRe[indElem] = -sol[dof-1];
+        }
+            break;
+        case STAT_CCCS:
+            double gainValue = elem.valueList[0];
+            assert(elem.elemList.size() > 0);
+
+            std::string dummyVSname  = elem.elemList[0];
+            if (sourceDoFmap.find(dummyVSname) == sourceDoFmap.end()) {
+                std::cerr << "Unknown source: \"" << dummyVSname << "\"" << std::endl;
+                exit(-1);
+            }
+            unsigned int refCurDoF = sourceDoFmap[dummyVSname];
+            currentRe[indElem] = gainValue * sol[refCurDoF];
+            break;
+        }
+    }
+}
+
+void
+Assembly::disp() {
+    std::cout << std::endl << "Branch voltages and currents:" << std::endl;
+    for (unsigned int indElem = 0; indElem < parser->elements.size(); indElem++) {
+        Element elem = parser->elements[indElem];
+        std::cout << elem.name << " " << voltageRe[indElem]
+                  << " " << currentRe[indElem] << std::endl;
+    }
+}
+
 #ifdef ASSEMBLY_TEST
 
 int
@@ -310,6 +414,8 @@ main(int argc, char **argv) {
     std::cout << std::endl;
 
     unsigned int numNodes = parser.nodeList->numNodes;
+    ass.postProc(sol);
+    ass.disp();
 }
 
 #endif

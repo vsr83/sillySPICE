@@ -33,7 +33,6 @@ class Assembly {
 public:
     Assembly(Parser *_parser);
     ~Assembly();
-
     double * solve();
 
     bool complex;              // Are the DoFs complex?
@@ -55,6 +54,11 @@ public:
     Matrix *fullMNA;
     double *fullExcitation;
     Parser *parser;            // Parser constructed outside.
+
+    std::vector <double> currentRe, currentIm,
+                         voltageRe, voltageIm;
+    void postProc(double *sol);
+    void disp();
 
 private:
     void buildReal();
