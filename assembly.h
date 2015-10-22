@@ -31,7 +31,7 @@
 
 class Assembly {
 public:
-    Assembly(Parser *_parser);
+    Assembly(NodeList *_nodeList, ElementList *_elemList, bool _complex = false);
     ~Assembly();
     double * solve();
 
@@ -53,7 +53,9 @@ public:
 
     Matrix *fullMNA;
     double *fullExcitation;
-    Parser *parser;            // Parser constructed outside.
+//    Parser *parser;            // Parser constructed outside.
+    NodeList *nodeList;
+    ElementList *elemList;
 
     std::vector <double> currentRe, currentIm,
                          voltageRe, voltageIm;

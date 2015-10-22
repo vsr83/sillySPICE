@@ -20,20 +20,9 @@ public:
     Parser(std::vector<cirStatement> &statList);
     ~Parser();
 
-    // Circuit elemnts and the count of elements.
-    std::vector <Element> elements;
-     std::map <std::string, unsigned int> mapNameElem;
-    // Names of the elements, which require branch their current as additional
-    // degree of freedom.
-    // std::map <std::string, unsigned int> refElements;
-    //std::map <std::string, std::string> mapElemDummy;
-    unsigned int numRefBranches;
-
-    std::map <unsigned int, unsigned int> elemTypeCount;
-    // The set of node names and the mappings between node names and node
-    // indices.
-    std::set <std::string> nodeSet;
     NodeList *nodeList;
+    ElementList *elemList;
+
     // Topology object is used to check whether the circuit has floating
     // nodes.
     Topology *topology;
@@ -53,7 +42,11 @@ public:
     unsigned int analysisTypeAC;
     unsigned int analysisACnpoints, analysisACstartFreq, analysisACendFreq;
 
-    // Post-processing:
+private:
+    // Circuit elemnts.
+    std::vector <Element> elements;
+    std::set <std::string> nodeSet;
+
 };
 
 #endif // PARSER_H

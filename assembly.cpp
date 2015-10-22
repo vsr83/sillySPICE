@@ -1,30 +1,31 @@
 #include "assembly.h"
 
-Assembly::Assembly(Parser *_parser) : currentRe(_parser->elements.size(), 0),
-                                      currentIm(_parser->elements.size(), 0),
-                                      voltageRe(_parser->elements.size(), 0),
-                                      voltageIm(_parser->elements.size(), 0) {
-    parser           = _parser;
+Assembly::Assembly(NodeList *_nodeList, ElementList *_elemList, bool _complex) :
+                                      currentRe(_elemList->elements.size(), 0),
+                                      currentIm(_elemList->elements.size(), 0),
+                                      voltageRe(_elemList->elements.size(), 0),
+                                      voltageIm(_elemList->elements.size(), 0) {
+    nodeList         = _nodeList;
+    elemList         = _elemList;
+    complex          = _complex;
     systemMNA        = 0;
     systemExcitation = 0;
 
-    // Numbers of all permissible elements.
-    unsigned int numRes  = parser->elemTypeCount[STAT_RESISTANCE],
-                 numVolt = parser->elemTypeCount[STAT_VOLTAGESOURCE],
-                 numCur  = parser->elemTypeCount[STAT_CURRENTSOURCE],
-                 numVCVS = parser->elemTypeCount[STAT_VCVS],
-                 numCCVS = parser->elemTypeCount[STAT_CCVS];
+    // Numbers of elements, which influence the number of DoFs.
+    unsigned int numRes  = elemList->typeCount[STAT_RESISTANCE],
+                 numVolt = elemList->typeCount[STAT_VOLTAGESOURCE],
+                 numCur  = elemList->typeCount[STAT_CURRENTSOURCE],
+                 numVCVS = elemList->typeCount[STAT_VCVS],
+                 numCCVS = elemList->typeCount[STAT_CCVS];
 
-    numNodes = parser->nodeList->numNodes;
+    numNodes = nodeList->numNodes;
     numDoF = numNodes - 1 + numVolt + numVCVS + numCCVS;
 
     // When the degrees of freedom are complex-valued, the real and imaginary
     // parts of the DoF are included as separate degrees of freedom in the
     // system matrix and excitation vectors.
 
-    if (parser->analysisType == Parser::ANALYSIS_AC) {
-        complex = true;
-
+    if (complex) {
         fullMNA = new Matrix((numDoF+1)*2, (numDoF+1)*2);
         fullExcitation = new double[(numDoF+1)*2];
 
@@ -32,8 +33,6 @@ Assembly::Assembly(Parser *_parser) : currentRe(_parser->elements.size(), 0),
            fullExcitation[indDoF] = 0;
         }
     } else {
-        complex = false;
-
         fullMNA = new Matrix(numDoF+1, numDoF+1);
         fullExcitation = new double[numDoF+1];
 
@@ -49,6 +48,7 @@ Assembly::Assembly(Parser *_parser) : currentRe(_parser->elements.size(), 0),
         buildReal();
     }
 
+    // Extract the system matrix and excitation vector:
     if (complex) {
         std::cerr << "ASSEMBLY : Complex solver not implemented!" << std::endl;
         exit(-1);
@@ -72,13 +72,13 @@ Assembly::buildReal() {
 
     std::cout << std::endl << "Assembly:" << std::endl;
 
-    for (unsigned int indElem = 0; indElem < parser->elements.size(); indElem++) {
-        Element elem = parser->elements[indElem];
+    for (unsigned int indElem = 0; indElem < elemList->elements.size(); indElem++) {
+        Element elem = elemList->elements[indElem];
 
         std::string nodeStr1 = elem.nodeList[0],
                     nodeStr2 = elem.nodeList[1];
-        unsigned int node1 = parser->nodeList->mapStringNode[nodeStr1],
-                     node2 = parser->nodeList->mapStringNode[nodeStr2];
+        unsigned int node1 = nodeList->mapStringNode[nodeStr1],
+                     node2 = nodeList->mapStringNode[nodeStr2];
 
         switch (elem.elemType) {
         case STAT_RESISTANCE: {
@@ -140,13 +140,13 @@ Assembly::buildReal() {
         }
     }
 
-    for (unsigned int indElem = 0; indElem < parser->elements.size(); indElem++) {
-        Element elem = parser->elements[indElem];
+    for (unsigned int indElem = 0; indElem < elemList->elements.size(); indElem++) {
+        Element elem = elemList->elements[indElem];
 
         std::string nodeStr1 = elem.nodeList[0],
                     nodeStr2 = elem.nodeList[1];
-        unsigned int node1 = parser->nodeList->mapStringNode[nodeStr1],
-                     node2 = parser->nodeList->mapStringNode[nodeStr2];
+        unsigned int node1 = nodeList->mapStringNode[nodeStr1],
+                     node2 = nodeList->mapStringNode[nodeStr2];
 
         switch (elem.elemType) {
         case STAT_RESISTANCE: {
@@ -160,8 +160,8 @@ Assembly::buildReal() {
 
             std::string nodeStr3 = elem.nodeList[2],
                         nodeStr4 = elem.nodeList[3];
-            unsigned int node3 = parser->nodeList->mapStringNode[nodeStr3],
-                         node4 = parser->nodeList->mapStringNode[nodeStr4];
+            unsigned int node3 = nodeList->mapStringNode[nodeStr3],
+                         node4 = nodeList->mapStringNode[nodeStr4];
 
             std::cout << "VCVS " << nodeStr1 << " " << nodeStr2 << " "
                       << nodeStr3 << " " << nodeStr4 << std::endl;
@@ -201,8 +201,8 @@ Assembly::buildReal() {
             assert(elem.nodeList.size() >= 4);
             std::string nodeStr3 = elem.nodeList[2],
                         nodeStr4 = elem.nodeList[3];
-            unsigned int node3 = parser->nodeList->mapStringNode[nodeStr3],
-                         node4 = parser->nodeList->mapStringNode[nodeStr4];
+            unsigned int node3 = nodeList->mapStringNode[nodeStr3],
+                         node4 = nodeList->mapStringNode[nodeStr4];
 
             double gainValue = elem.valueList[0];
 
@@ -278,14 +278,14 @@ Assembly::solve() {
 
 void
 Assembly::postProc(double *sol) {
-    for (unsigned int indElem = 0; indElem < parser->elements.size(); indElem++) {
-        Element elem = parser->elements[indElem];
+    for (unsigned int indElem = 0; indElem < elemList->elements.size(); indElem++) {
+        Element elem = elemList->elements[indElem];
 
         assert(elem.nodeList.size() >= 2);
         std::string nodeStr1 = elem.nodeList[0],
                     nodeStr2 = elem.nodeList[1];
-        unsigned int node1 = parser->nodeList->mapStringNode[nodeStr1],
-                     node2 = parser->nodeList->mapStringNode[nodeStr2];
+        unsigned int node1 = nodeList->mapStringNode[nodeStr1],
+                     node2 = nodeList->mapStringNode[nodeStr2];
 
         assert(node1 <= numNodes);
         assert(node2 <= numNodes);
@@ -334,8 +334,8 @@ Assembly::postProc(double *sol) {
 
             std::string nodeStr3 = elem.nodeList[2],
                         nodeStr4 = elem.nodeList[3];
-            unsigned int node3 = parser->nodeList->mapStringNode[nodeStr3],
-                         node4 = parser->nodeList->mapStringNode[nodeStr4];
+            unsigned int node3 = nodeList->mapStringNode[nodeStr3],
+                         node4 = nodeList->mapStringNode[nodeStr4];
 
             currentRe[indElem] = gainValue*(sol[node3-1] - sol[node4-1]);
         }
@@ -370,8 +370,8 @@ Assembly::postProc(double *sol) {
 void
 Assembly::disp() {
     std::cout << std::endl << "Branch voltages and currents:" << std::endl;
-    for (unsigned int indElem = 0; indElem < parser->elements.size(); indElem++) {
-        Element elem = parser->elements[indElem];
+    for (unsigned int indElem = 0; indElem < elemList->elements.size(); indElem++) {
+        Element elem = elemList->elements[indElem];
         std::cout << elem.name << " " << voltageRe[indElem]
                   << " " << currentRe[indElem] << std::endl;
     }
@@ -393,7 +393,7 @@ main(int argc, char **argv) {
     std::cout << std::endl << "DC Analysis of resistive circuit: \""
               << cir.title << "\"" << std::endl;
     Parser parser(cir.statList);
-    Assembly ass(&parser);
+    Assembly ass(parser.nodeList, parser.elemList, false);
 
     std::cout << std::endl << "Full Matrix:" << std::endl;
     ass.fullMNA->disp();

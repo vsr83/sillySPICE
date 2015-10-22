@@ -24,4 +24,14 @@ public:
     std::vector <double> valueList;
 };
 
+class ElementList {
+public:
+    ElementList(std::vector <Element> &_elements);
+    ~ElementList();
+
+    std::vector <Element> elements;
+    std::map <std::string, unsigned int> mapNameElem;
+    std::map <unsigned int, unsigned int> typeCount;
+};
+
 #endif // ELEMENT_H

@@ -7,7 +7,7 @@ Parser::Parser(std::vector<cirStatement> &statList) {
     std::cout << "Parsing Statements:" << std::endl;
 
 
-    numRefBranches = 0;
+//    numRefBranches = 0;
 
     for (unsigned int indStat = 0; indStat < statList.size(); indStat++) {
         cirStatement stat = statList[indStat];
@@ -31,7 +31,7 @@ Parser::Parser(std::vector<cirStatement> &statList) {
         if (stat.statClass == CLASS_PASSIVE) {
             Element elem(stat);
             elements.push_back(elem);
-            mapNameElem[stat.strList[0]] = elements.size()-1;
+//            mapNameElem[stat.strList[0]] = elements.size()-1;
 
             for (unsigned int indNode = 0; indNode < elem.nodeList.size(); indNode++) {
                 nodeSet.insert(elem.nodeList[indNode]);
@@ -39,7 +39,7 @@ Parser::Parser(std::vector<cirStatement> &statList) {
         }
         if (stat.statClass == CLASS_SOURCE) {
             Element elem(stat);
-            mapNameElem[stat.strList[0]] = elements.size();
+           // mapNameElem[stat.strList[0]] = elements.size();
             elements.push_back(elem);
 
             // Extract the names of reference branches.
@@ -102,72 +102,7 @@ Parser::Parser(std::vector<cirStatement> &statList) {
     }
 
     nodeList = new NodeList(nodeSet);
-
-
-    /*
-    std::cout << std::endl << "Element Reference Mapping:" << std::endl;
-
-    // Create dummy nodes and elements.
-    for (std::map<std::string, unsigned int>::iterator it=refElements.begin();
-         it != refElements.end(); ++it) {
-        std::string  name    = it->first;
-        unsigned int elemInd = it->second;
-        std::cout << "REF " << name << "->" << elemInd << std::endl;
-
-        assert(elemInd < elements.size());
-        unsigned int nodeDummyInd = nodeList->addNode();
-        std::string  nodeDummyStr = nodeList->mapNodeString[nodeDummyInd];
-        std::cout << nodeDummyInd << " "  << nodeDummyStr << " " << std::endl;
-
-        Element elem = elements[elemInd];
-        std::string oldNodeStr = elem.nodeList[0];
-        elem.nodeList[0] = nodeDummyStr;
-        elements[elemInd] = elem;
-
-        std::stringstream ss;
-        ss << "Vd" << nodeDummyStr << " " << oldNodeStr << " " << nodeDummyStr << " 0";
-        std::string s = ss.str();
-        std::cout << s << std::endl;
-
-        cirStatement stat(s);
-        Element newElem(stat);
-        elements.push_back(newElem);
-
-        mapElemDummy[name] = newElem.name;
-        std::cout << "mapElemDummy[\"" << name << "\"] = \"" << newElem.name << "\"" << std::endl;
-    }
-    */
-
-    std::cout << std::endl << "Element List:" << std::endl;
-    // Create a node list and count the number of elements with each type.
-    for (unsigned int elemInd = 0; elemInd < elements.size(); elemInd++) {
-        Element elem = elements[elemInd];
-
-        if (elemTypeCount.find(elem.elemType) == elemTypeCount.end()) {
-            elemTypeCount[elem.elemType] = 1;
-        } else {
-            elemTypeCount[elem.elemType]++;
-        }
-
-        std::cout << "Element " << elemInd << " \"" << elem.name << "\""<< " :";
-        for (unsigned int nodeInd = 0; nodeInd < elem.nodeList.size(); nodeInd++) {
-            std::cout << "\"" << elem.nodeList[nodeInd] << "\"/"
-                      << nodeList->mapStringNode[elem.nodeList[nodeInd]] << ", ";
-        }
-        std::cout << elemTypeCount[elem.elemType];
-        std::cout << std::endl;
-    }
-
-    std::cout << std::endl << "Element Mapping:" << std::endl;
-    // Element list:
-    for (std::map<std::string, unsigned int>::iterator it=mapNameElem.begin();
-         it != mapNameElem.end(); ++it) {
-        std::string  name    = it->first;
-        unsigned int elemInd = it->second;
-        std::cout << "  " << name << "->" << elemInd << std::endl;
-
-    }
-
+    elemList = new ElementList(elements);
 
     std::cout << std::endl << "Node List:" << std::endl;
 
@@ -242,6 +177,8 @@ Parser::~Parser() {
     nodeList = 0;
     delete topology;
     topology = 0;
+    delete elemList;
+    elemList = 0;
 }
 
 #ifdef PARSE_TEST
