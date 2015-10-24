@@ -112,39 +112,6 @@ Element::~Element() {
 
 ElementList::ElementList(std::vector <Element> &_elements) {
     elements = _elements;
-    /*
-    std::cout << std::endl << "Element Reference Mapping:" << std::endl;
-
-    // Create dummy nodes and elements.
-    for (std::map<std::string, unsigned int>::iterator it=refElements.begin();
-         it != refElements.end(); ++it) {
-        std::string  name    = it->first;
-        unsigned int elemInd = it->second;
-        std::cout << "REF " << name << "->" << elemInd << std::endl;
-
-        assert(elemInd < elements.size());
-        unsigned int nodeDummyInd = nodeList->addNode();
-        std::string  nodeDummyStr = nodeList->mapNodeString[nodeDummyInd];
-        std::cout << nodeDummyInd << " "  << nodeDummyStr << " " << std::endl;
-
-        Element elem = elements[elemInd];
-        std::string oldNodeStr = elem.nodeList[0];
-        elem.nodeList[0] = nodeDummyStr;
-        elements[elemInd] = elem;
-
-        std::stringstream ss;
-        ss << "Vd" << nodeDummyStr << " " << oldNodeStr << " " << nodeDummyStr << " 0";
-        std::string s = ss.str();
-        std::cout << s << std::endl;
-
-        cirStatement stat(s);
-        Element newElem(stat);
-        elements.push_back(newElem);
-
-        mapElemDummy[name] = newElem.name;
-        std::cout << "mapElemDummy[\"" << name << "\"] = \"" << newElem.name << "\"" << std::endl;
-    }
-    */
 
     std::cout << std::endl << "Element List:" << std::endl;
     // Create a node list and count the number of elements with each type.
