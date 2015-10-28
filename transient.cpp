@@ -1,3 +1,20 @@
+/* sillySPICE - A SPICE-like Circuit Solver
+   Copyright (C) 2015 Ville Räisänen <vsr at vsr.name>
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "transient.h"
 
 Transient::Transient(Parser *_parser, double _dt, double _t2, double _t1, double _theta) {
@@ -97,8 +114,7 @@ Transient::Transient(Parser *_parser, double _dt, double _t2, double _t1, double
 
     elemList = new ElementList(elements);
 
-    std::vector <double> voltages(elements.size(), 0);
-
+    // Perform the time integration.
     for (double t=t1; t < t2; t+=dt) {
         // Assemble the MNA equations for the modified circuit.
         Assembly ass(parser->nodeList, elemList, false);
@@ -132,10 +148,6 @@ Transient::Transient(Parser *_parser, double _dt, double _t2, double _t1, double
 
             elemList->elements[elemInd].valueList[0] = -propConstVolt[indElem] * ass.voltageRe[elemInd]
                                                        -propConstCur[indElem] * ass.currentRe[elemInd];
-            std::cout << "UPDATE " << elemList->elements[elemInd].name << "->" <<
-                         elemList->elements[elemInd].valueList[0] << " (" <<
-                      ass.voltageRe[elemInd] << ")"
-                      << propConstVolt[indElem] << std::endl;
         }
     }
 }

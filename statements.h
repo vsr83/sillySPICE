@@ -1,6 +1,24 @@
+/* sillySPICE - A SPICE-like Circuit Solver
+   Copyright (C) 2015 Ville Räisänen <vsr at vsr.name>
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #ifndef STATEMENT_H
 #define STATEMENT_H
 
+// All classes of valid SPICE statements.
 enum {CLASS_EMPTY,
       CLASS_COMMENT,
       CLASS_SUBCKT,
@@ -12,6 +30,7 @@ enum {CLASS_EMPTY,
       CLASS_ANALYSIS,
       CLASS_POSTPROC};
 
+// All types of valid SPICE statemts.
 enum {STAT_EMPTY,
       STAT_COMMENT,       // '*'
       STAT_CONTLINE,      // '+'
@@ -57,11 +76,12 @@ enum {STAT_EMPTY,
      };
 
 struct {
-    unsigned statNum, classNum;
-    const char *statStr;
-    bool singleChar, implemented;
-    unsigned int minArg, maxArg;
-    const char *name;
+    unsigned statNum, classNum;   // Type and class of the statement.
+    const char *statStr;          // First letter or full first word of the statement.
+    bool singleChar;              // Is first character sufficient to select the statement?
+    bool implemented;             // Is appropriate handiling of the statement implemented?
+    unsigned int minArg, maxArg;  // Minimum and maximum number of arguments.
+    const char *name;             // Name for the type of statement or element.
 } static const statements[] = {
     STAT_EMPTY,          CLASS_EMPTY,     " ",          false, true,  0, 0,    "Empty Statement",
     STAT_COMMENT,        CLASS_META,      "*",          true,  true,  0, 1024, "Comment",

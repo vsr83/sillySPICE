@@ -1,3 +1,20 @@
+/* sillySPICE - A SPICE-like Circuit Solver
+   Copyright (C) 2015 Ville Räisänen <vsr at vsr.name>
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #ifndef PARSER_H
 #define PARSER_H
 
@@ -10,10 +27,10 @@
 
 #include <stdlib.h>
 
-/*
- * This class parses the list of SPICE statements into the objects necessary
- * for description of nodes, elements, analysis and post-processing.
- */
+/* Parser objects parse a list of SPICE statements into the objects necessary
+ * for description of nodes, elements, analysis and post-processing. The list
+ * of statements used as a parameter to the constructor is typically obtained
+ * from a .cir-file with a cirFile object. */
 
 class Parser {
 public:
@@ -43,10 +60,9 @@ public:
     unsigned int analysisACnpoints, analysisACstartFreq, analysisACendFreq;
 
 private:
-    // Circuit elemnts.
+    // Circuit elements.
     std::vector <Element> elements;
     std::set <std::string> nodeSet;
-
 };
 
 #endif // PARSER_H
