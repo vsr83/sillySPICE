@@ -28,6 +28,7 @@ class ElementList {
 public:
     ElementList(std::vector <Element> &_elements);
     ~ElementList();
+    void disp();
 
     std::vector <Element> elements;
     std::map <std::string, unsigned int> mapNameElem;

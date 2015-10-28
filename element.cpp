@@ -113,7 +113,6 @@ Element::~Element() {
 ElementList::ElementList(std::vector <Element> &_elements) {
     elements = _elements;
 
-    std::cout << std::endl << "Element List:" << std::endl;
     // Create a node list and count the number of elements with each type.
     for (unsigned int elemInd = 0; elemInd < elements.size(); elemInd++) {
         Element elem = elements[elemInd];
@@ -125,11 +124,19 @@ ElementList::ElementList(std::vector <Element> &_elements) {
         }
 
         mapNameElem[elem.name] = elemInd;
+    }
+}
+
+void
+ElementList::disp() {
+    std::cout << std::endl << "Element List:" << std::endl;
+    // Create a node list and count the number of elements with each type.
+    for (unsigned int elemInd = 0; elemInd < elements.size(); elemInd++) {
+        Element elem = elements[elemInd];
 
         std::cout << "Element " << elemInd << " \"" << elem.name << "\""<< " :";
         for (unsigned int nodeInd = 0; nodeInd < elem.nodeList.size(); nodeInd++) {
-//            std::cout << "\"" << elem.nodeList[nodeInd] << "\"/"
-//                      << nodeList->mapStringNode[elem.nodeList[nodeInd]] << ", ";
+            std::cout << "\"" << elem.nodeList[nodeInd] << "\", ";
         }
         std::cout << typeCount[elem.elemType];
         std::cout << std::endl;

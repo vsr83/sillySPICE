@@ -134,7 +134,7 @@ Assembly::buildReal() {
         case STAT_CCVS: {
         } break;
         default:
-            std::cerr << "ASSEMBLY : Unknown Element Type!" << std::endl;
+            std::cerr << "ASSEMBLY : Unknown Element Type! " << elem.elemType << std::endl;
             exit(-1);
             break;
         }

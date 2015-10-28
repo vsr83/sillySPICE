@@ -8,6 +8,7 @@
 #include "value.h"
 #include "statements.h"
 #include "topology.h"
+#include "assembly.h"
 
 #include "matrix.h"
 
@@ -17,8 +18,9 @@ public:
     ~Transient();
 
     double dt, t1, t2, theta;
+    ElementList *elemList;
 private:
-    Parser *parser;
+    Parser      *parser;
 
     std::vector <std::vector <int> > companionInd;
 };
