@@ -1,7 +1,10 @@
-SIMPLE CIRCUIT WITH A CURRENT SOURCE
+SIMPLE CAPACITIVE CIRCUIT
+* Analytical solution can be easily obtained as:
+* V(t) = V(0)(1 - exp(-t/(CR)))
+
 VDC 1 0 1
-R1   2 1 1000
-C1   0 2 1
-*FOOOBAR
+R1   2 1 10000
+C1   0 2 1u
+
 .tran 0 1
 .end

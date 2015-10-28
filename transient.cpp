@@ -160,7 +160,7 @@ main(int argc, char **argv) {
     std::cout << std::endl << "Transient Analysis of linear circuit: \""
               << cir.title << "\"" << std::endl;
     Parser parser(cir.statList);
-    Transient tran(&parser, 0.01, 10, 0, 0.5);
+    Transient tran(&parser, 0.0001, 0.1, 0, 0.5);
     tran.elemList->disp();
 }
 

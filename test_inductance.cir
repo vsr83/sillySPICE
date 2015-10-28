@@ -1,7 +1,10 @@
-SIMPLE CIRCUIT WITH A CURRENT SOURCE
+SIMPLE INDUCTIVE CIRCUIT
+* The analytical solution can be easily obtained as
+* I(t) = (V(0)/R)*(1 - exp(-t*(R/L)))
+
 VDC 1 0 1
-L1   2 1 1
-R1   0 2 1
-*FOOOBAR
+L1   2 1 0.1
+R1   0 2 10
+
 .tran 0 1
 .end
