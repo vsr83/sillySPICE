@@ -44,6 +44,37 @@ cirStatement::toUpper(const std::string &s) {
     return str;
 }
 
+void
+cirStatement::extractBrackets(const std::string &s) {
+    bool inside = false;
+    unsigned int start;
+
+    std::cout << std::endl << s << std::endl;
+
+    for (unsigned int indS = 0; indS < s.length(); indS++) {
+        char c = s[indS];
+
+//        std::cout << c;
+        if ((c == '(' && inside) || (c == ')' && !inside)) {
+            std::cerr << "Parenthesis error in input file!" << std::endl;
+            exit(-1);
+        }
+        if (c == '(') {
+            inside = true;
+            start = indS;
+        }
+        if (c == ')') {
+            inside = false;
+            unsigned int numch = indS - start - 1;
+            if (numch > 0) {
+                std::string subs = s.substr(start + 1, numch);
+                std::vector <std::string> slist = strSplit(subs, ' ');
+                bracketList.push_back(slist);
+            }
+        }
+    }
+}
+
 cirStatement::cirStatement(std::string &rawString) {
     std::vector <std::string> tmpList;
 
@@ -51,7 +82,17 @@ cirStatement::cirStatement(std::string &rawString) {
     // ';'. The following code removes the comment from the statement.
     tmpList = strSplit(rawString, ';');
     if (tmpList.size() > 0) {
-        strList = strSplit(tmpList[0], ' ');
+        std::string s = tmpList[0];
+
+        strList = strSplit(s, ' ');
+
+        // If the line is not a comment line, extract brackets.
+        if (strList.size() > 0) {
+            std::string firstStr = strList[0];
+            if (firstStr[0] != '*') {
+                extractBrackets(s);
+            }
+        }
     } else {
         strList = tmpList;
     }
@@ -111,42 +152,53 @@ cirFile::cirFile(const std::string &_fileName) {
     std::ifstream inputFile(fileName.c_str(), std::ios_base::in);
 
     std::string line;
-    strList.clear();
     while(getline(inputFile, line, '\n')) {
-        strList.push_back(line);
-    }
+        std::size_t found = line.find_first_not_of(' ');
+        if (found != std::string::npos) {
+            line = line.substr(found);
 
-    std::cout << "File  :\"" << fileName << "\" with " << strList.size() << " lines" << std::endl;
-    if (strList.size() == 0) {
+            if (line.length() > 0) {
+                char firstch = line[0];
+
+                // If statement is continued into the new line with the symbol '+',
+                // combine previous line with the new line. Empty and comment
+                // statements are not added the vector.
+                if (firstch == '+') {
+                    assert(lineList.size() > 0);
+                    assert(line.length() > 1);
+
+                    std::string prevLine = lineList.back();
+                    lineList.pop_back();
+                    line = prevLine + line.substr(1);
+                }
+                lineList.push_back(line);
+            }
+        }
+    }
+    std::cout << "File  :\"" << fileName << "\" with " << lineList.size() << " lines" << std::endl;
+    if (lineList.size() == 0) {
         std::cerr << "Input file empty." << std::endl;
         exit(-1);
     }
-    if (strList.size() == 1) {
+    if (lineList.size() == 1) {
         std::cerr << "Input file contains only the title." << std::endl;
         exit(-1);
     }
-    title = strList[0];
+    title = lineList.front();
     std::cout << "Title :\"" << title << "\"" << std::endl;
 
+    std::list<std::string>::iterator it = lineList.begin();
+    unsigned int indLine = 0;
+    it++;
+
     // Assemble statements into a vector.
-    for (unsigned int elemInd = 1; elemInd < strList.size(); elemInd++) {
-        std::cout << elemInd << ":";
-        cirStatement stat(strList[elemInd]);
+    while (it != lineList.end()) {
+        std::string line = *it;
 
-        // If statement is continued into the new line with the symbol '+',
-        // combine previous statement with the new statement. Empty and comment
-        // statements are not added the vector.
-        if (stat.type == STAT_CONTLINE) {
-            cirStatement prev = statList.back();
-            statList.pop_back();
-
-            for (unsigned int indStr = 1; indStr < stat.strList.size(); indStr++) {
-                prev.strList.push_back(stat.strList[indStr]);
-            }
-            statList.push_back(prev);
-        } else if (stat.type != STAT_EMPTY && stat.type != STAT_COMMENT) {
-            statList.push_back(stat);
-        }
+        std::cout << indLine++ << ":";
+        cirStatement stat(line);
+        statList.push_back(stat);
+        it++;
     }    
 }
 

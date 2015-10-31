@@ -23,6 +23,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <list>
 
 #include "statements.h"
 
@@ -40,9 +41,11 @@ public:
     ~cirStatement();
 
     unsigned int type, statClass;
-    std::vector <std::string> strList;
+    std::vector <std::string>               strList;
+    std::vector <std::vector<std::string> > bracketList;
 private:
     std::vector <std::string> strSplit (const std::string &s, char delim);
+    void extractBrackets(const std::string &s);
     std::string toUpper(const std::string &s);
 };
 
@@ -57,7 +60,7 @@ public:
     ~cirFile();
 
     void disp();
-    std::vector <std::string>  strList;
+    std::list   <std::string>               lineList;
     std::vector <cirStatement> statList;
     std::string fileName;
 

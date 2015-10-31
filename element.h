@@ -42,6 +42,9 @@
  *
  * valueList vector is used to contain the values of the elements such as the
  * values resistances, capacitances or resistances.
+ *
+ * typeList vector is used to contain additional parameters such as the wave
+ * shapes for sources.
  */
 
 class Element {
