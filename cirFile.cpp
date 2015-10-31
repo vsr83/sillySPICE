@@ -151,8 +151,16 @@ cirFile::cirFile(const std::string &_fileName) {
     fileName = std::string(_fileName);
     std::ifstream inputFile(fileName.c_str(), std::ios_base::in);
 
+    // Read input file into a list of strings and remove comments.
     std::string line;
     while(getline(inputFile, line, '\n')) {
+        // Remove comment.
+        std::size_t foundcomment = line.find_first_of(';');
+        if (foundcomment != std::string::npos) {
+            line = line.substr(0, foundcomment);
+        }
+
+        // Remove spaces from the beginning of the line.
         std::size_t found = line.find_first_not_of(' ');
         if (found != std::string::npos) {
             line = line.substr(found);
@@ -165,7 +173,7 @@ cirFile::cirFile(const std::string &_fileName) {
                 // statements are not added the vector.
                 if (firstch == '+') {
                     assert(lineList.size() > 0);
-                    assert(line.length() > 1);
+                    //assert(line.length() > 1);
 
                     std::string prevLine = lineList.back();
                     lineList.pop_back();
