@@ -43,6 +43,8 @@ public:
     unsigned int type, statClass;
     std::vector <std::string>               strList, bracketNames;
     std::vector <std::vector<std::string> > bracketList;
+
+    void disp();
 private:
 //    std::vector <std::string> strSplit (const std::string &s, char delim);
 //    void extractBrackets(const std::string &s);

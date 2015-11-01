@@ -34,18 +34,23 @@ cirStatement::cirStatement(std::string &rawString) {
     std::string currentWord;
     bool insideBrackets = false, insideWord = false;
 
+    // Check if the statement is empty. If not, extract the first character.
+    // Note that ' '-characters have been removed from the front of the string.
     char firstch = 0;
     if (rawString.length() > 0) {
         firstch = rawString[0];
     } else {
         statClass = CLASS_EMPTY;
         type = STAT_EMPTY;
+        return;
     }
 
+    // Check if the statement is a comment.
     bool isComment = firstch == '*';
     if (isComment) {
         statClass = CLASS_COMMENT;
         type = STAT_COMMENT;
+        // Remove the '*' from the fton of the comment.
         strList.push_back(rawString.substr(1));
         return;
     }
@@ -57,6 +62,11 @@ cirStatement::cirStatement(std::string &rawString) {
         bool isBracket = c == '(' || c == ')';
         bool last = indS == rawString.length() - 1;
 
+        if (!valid) {
+            std::cerr << "Invalid character '" << c << "'" << std::endl;
+            exit(-1);
+        }
+
         if (c == '(') {
             if (insideBrackets) {
                 std::cerr << "Nested brackets are not allowed!" << std::endl;
@@ -64,11 +74,14 @@ cirStatement::cirStatement(std::string &rawString) {
             }
             insideBrackets = true;
             currentBracket.clear();
-            if (insideWord) {
+
+            // Extract the name of the bracket.
+            if (insideWord) { // NAME(...
                 bracketNames.push_back(currentWord);
                 currentWord = "";
                 insideWord = false;
-            } else {
+            } else { // NAME (...
+                // Name is the previous word in the strList and removed from it.
                 if (strList.size() == 0) {
                     std::cerr << "Cannot start bracket without name!" << std::endl;
                     exit(-1);
@@ -83,13 +96,17 @@ cirStatement::cirStatement(std::string &rawString) {
                 exit(-1);
             }
             insideBrackets = false;
+
             if (insideWord) {
+                // ... ABC) No space between the last word inside the brackets and
+                // the end bracket.
                 insideWord = false;
                 currentBracket.push_back(currentWord);
             }
             bracketList.push_back(currentBracket);
             currentBracket.clear();
         } else if (insideWord && c == ' ') {
+            // End of word by ' '.
             insideWord = false;
             if (insideBrackets) {
                 currentBracket.push_back(currentWord);
@@ -106,30 +123,11 @@ cirStatement::cirStatement(std::string &rawString) {
         } else if (insideWord) {
             currentWord += c;
             if (last) {
+                // End of word by end of line.
                 strList.push_back(currentWord);
             }
         }
     }
-    std::cout << currentWord << "-" << insideWord << std::endl;
-    /*
-    // Normal SPICE statements can contain comments separated with the symbol
-    // ';'. The following code removes the comment from the statement.
-    tmpList = strSplit(rawString, ';');
-    if (tmpList.size() > 0) {
-        std::string s = tmpList[0];
-
-        strList = strSplit(s, ' ');
-
-        // If the line is not a comment line, extract brackets.
-        if (strList.size() > 0) {
-            std::string firstStr = strList[0];
-            if (firstStr[0] != '*') {
-                extractBrackets(s);
-            }
-        }
-    } else {
-        strList = tmpList;
-    }*/
 
     // The remaining code in this function determines the type of the SPICE
     // statement.
@@ -159,7 +157,19 @@ cirStatement::cirStatement(std::string &rawString) {
         std::cerr << "Statement \"" << statements[type].statStr << "\" not implemented!" << std::endl;
         exit(-1);
     }
+}
 
+cirStatement::cirStatement(const cirStatement &_stat) {
+    strList = _stat.strList;
+    type = _stat.type;
+    statClass = _stat.statClass;
+}
+
+cirStatement::~cirStatement() {
+}
+
+void
+cirStatement::disp() {
     std::cout << strList.size() << " - ";
     for (unsigned int indStr = 0; indStr < strList.size(); indStr++) {
         std::cout << "/" << strList[indStr];
@@ -181,14 +191,6 @@ cirStatement::cirStatement(std::string &rawString) {
     std::cout << std::endl;
 }
 
-cirStatement::cirStatement(const cirStatement &_stat) {
-    strList = _stat.strList;
-    type = _stat.type;
-    statClass = _stat.statClass;
-}
-
-cirStatement::~cirStatement() {
-}
 
 cirFile::cirFile(const std::string &_fileName) {
     fileName = std::string(_fileName);
@@ -250,6 +252,7 @@ cirFile::cirFile(const std::string &_fileName) {
         cirStatement stat(line);
         statList.push_back(stat);
         it++;
+        stat.disp();
     }    
 }
 
