@@ -20,23 +20,8 @@
 #include <cctype>
 #include <cassert>
 
-std::vector<std::string>
-cirStatement::strSplit(const std::string &s, char delim) {
-  std::stringstream ss(s);
-  std::string item;
-
-  std::vector <std::string> elems;
-
-  while (std::getline(ss, item, delim)) {
-    if (item.length() > 0) {
-        elems.push_back(toUpper(item));
-    }
-  }
-  return elems;
-}
-
 std::string
-cirStatement::toUpper(const std::string &s) {
+cirFile::toUpper(const std::string &s) {
     std::string str(s);
     for (unsigned int ind = 0; ind < str.length(); ind++) {
         str[ind] = std::toupper(str[ind]);
@@ -44,40 +29,89 @@ cirStatement::toUpper(const std::string &s) {
     return str;
 }
 
-void
-cirStatement::extractBrackets(const std::string &s) {
-    bool inside = false;
-    unsigned int start;
+cirStatement::cirStatement(std::string &rawString) {
+    std::vector <std::string> currentBracket;
+    std::string currentWord;
+    bool insideBrackets = false, insideWord = false;
 
-    std::cout << std::endl << s << std::endl;
+    char firstch = 0;
+    if (rawString.length() > 0) {
+        firstch = rawString[0];
+    } else {
+        statClass = CLASS_EMPTY;
+        type = STAT_EMPTY;
+    }
 
-    for (unsigned int indS = 0; indS < s.length(); indS++) {
-        char c = s[indS];
+    bool isComment = firstch == '*';
+    if (isComment) {
+        statClass = CLASS_COMMENT;
+        type = STAT_COMMENT;
+        strList.push_back(rawString.substr(1));
+        return;
+    }
 
-//        std::cout << c;
-        if ((c == '(' && inside) || (c == ')' && !inside)) {
-            std::cerr << "Parenthesis error in input file!" << std::endl;
-            exit(-1);
-        }
+    for (unsigned int indS=0; indS < rawString.length(); indS++) {
+        char c = rawString[indS];
+        bool valid = isalnum(c) || c == ' ' || c == '-' || c == '='
+                                || c == '(' || c == ')' || c == '.';
+        bool isBracket = c == '(' || c == ')';
+        bool last = indS == rawString.length() - 1;
+
         if (c == '(') {
-            inside = true;
-            start = indS;
-        }
-        if (c == ')') {
-            inside = false;
-            unsigned int numch = indS - start - 1;
-            if (numch > 0) {
-                std::string subs = s.substr(start + 1, numch);
-                std::vector <std::string> slist = strSplit(subs, ' ');
-                bracketList.push_back(slist);
+            if (insideBrackets) {
+                std::cerr << "Nested brackets are not allowed!" << std::endl;
+                exit(-1);
+            }
+            insideBrackets = true;
+            currentBracket.clear();
+            if (insideWord) {
+                bracketNames.push_back(currentWord);
+                currentWord = "";
+                insideWord = false;
+            } else {
+                if (strList.size() == 0) {
+                    std::cerr << "Cannot start bracket without name!" << std::endl;
+                    exit(-1);
+                }
+                std::string name = strList.back();
+                strList.pop_back();
+                bracketNames.push_back(name);
+            }
+        } else if (c == ')') {
+            if (!insideBrackets) {
+                std::cerr << "Cannot end non-started brackets!" << std::endl;
+                exit(-1);
+            }
+            insideBrackets = false;
+            if (insideWord) {
+                insideWord = false;
+                currentBracket.push_back(currentWord);
+            }
+            bracketList.push_back(currentBracket);
+            currentBracket.clear();
+        } else if (insideWord && c == ' ') {
+            insideWord = false;
+            if (insideBrackets) {
+                currentBracket.push_back(currentWord);
+            } else {
+                strList.push_back(currentWord);
+            }
+            currentWord = "";
+        } else if (!insideWord && c != ' ') {
+            insideWord = true;
+            currentWord += c;
+            if (last) {
+                strList.push_back(currentWord);
+            }
+        } else if (insideWord) {
+            currentWord += c;
+            if (last) {
+                strList.push_back(currentWord);
             }
         }
     }
-}
-
-cirStatement::cirStatement(std::string &rawString) {
-    std::vector <std::string> tmpList;
-
+    std::cout << currentWord << "-" << insideWord << std::endl;
+    /*
     // Normal SPICE statements can contain comments separated with the symbol
     // ';'. The following code removes the comment from the statement.
     tmpList = strSplit(rawString, ';');
@@ -95,47 +129,56 @@ cirStatement::cirStatement(std::string &rawString) {
         }
     } else {
         strList = tmpList;
-    }
+    }*/
 
     // The remaining code in this function determines the type of the SPICE
     // statement.
-    statClass = CLASS_EMPTY;
-    if (strList.size() == 0) {
-        type = STAT_EMPTY;
-    } else {
-        std::string first = strList[0];
-        assert(first.length() > 0);
+    std::string first = strList[0];
+    assert(first.length() > 0);
 
-        bool found = false;
+    bool found = false;
 
-        for (unsigned int statType = 0; statType < numStatements; statType++) {
-            if (statements[statType].singleChar && first[0] == statements[statType].statStr[0]) {
-                statClass = statements[statType].classNum;
-                type      = statements[statType].statNum;
-                found = true;
-                break;
-            } else if (!statements[statType].singleChar && first == statements[statType].statStr) {
-                statClass = statements[statType].classNum;
-                type      = statements[statType].statNum;
-                found = true;
-                break;
-            }
+    for (unsigned int statType = 0; statType < numStatements; statType++) {
+        if (statements[statType].singleChar && first[0] == statements[statType].statStr[0]) {
+            statClass = statements[statType].classNum;
+            type      = statements[statType].statNum;
+            found = true;
+            break;
+        } else if (!statements[statType].singleChar && first == statements[statType].statStr) {
+            statClass = statements[statType].classNum;
+            type      = statements[statType].statNum;
+            found = true;
+            break;
         }
-        if (!found) {
-            std::cerr << "Unknown statement type \"" << first << "\"!" << std::endl;
-            exit(-1);
-        }
-        if (!statements[type].implemented) {
-            std::cerr << "Statement \"" << statements[type].statStr << "\" not implemented!" << std::endl;
-            exit(-1);
-        }
-
     }
+    if (!found) {
+        std::cerr << "Unknown statement type \"" << first << "\"!" << std::endl;
+        exit(-1);
+    }
+    if (!statements[type].implemented) {
+        std::cerr << "Statement \"" << statements[type].statStr << "\" not implemented!" << std::endl;
+        exit(-1);
+    }
+
     std::cout << strList.size() << " - ";
     for (unsigned int indStr = 0; indStr < strList.size(); indStr++) {
         std::cout << "/" << strList[indStr];
     }
-    std::cout << "/" << std::endl;
+    std::cout << "/ ";
+
+    for (unsigned int indBracket = 0; indBracket < bracketList.size(); indBracket++) {
+        std::cout << bracketNames[indBracket] << "(";
+        std::vector<std::string> bracket = bracketList[indBracket];
+
+        for (unsigned int indStr = 0; indStr < bracket.size(); indStr++) {
+            std::cout << bracket[indStr];
+            if (indStr < bracket.size() - 1) std::cout << " ";
+        }
+
+        std::cout << ")";
+        if (indBracket < bracketList.size()-1) std::cout << "|";
+    }
+    std::cout << std::endl;
 }
 
 cirStatement::cirStatement(const cirStatement &_stat) {
@@ -201,7 +244,7 @@ cirFile::cirFile(const std::string &_fileName) {
 
     // Assemble statements into a vector.
     while (it != lineList.end()) {
-        std::string line = *it;
+        std::string line = toUpper(*it);
 
         std::cout << indLine++ << ":";
         cirStatement stat(line);

@@ -41,12 +41,11 @@ public:
     ~cirStatement();
 
     unsigned int type, statClass;
-    std::vector <std::string>               strList;
+    std::vector <std::string>               strList, bracketNames;
     std::vector <std::vector<std::string> > bracketList;
 private:
-    std::vector <std::string> strSplit (const std::string &s, char delim);
-    void extractBrackets(const std::string &s);
-    std::string toUpper(const std::string &s);
+//    std::vector <std::string> strSplit (const std::string &s, char delim);
+//    void extractBrackets(const std::string &s);
 };
 
 /* cirFile object reads contents of a .cir-file into a vector of SPICE
@@ -66,6 +65,7 @@ public:
 
     std::string title;
 private:
+    std::string toUpper(const std::string &s);
 };
 
 #endif // CIRFILE_H
