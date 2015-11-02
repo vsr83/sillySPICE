@@ -58,7 +58,7 @@ cirStatement::cirStatement(std::string &rawString) {
     for (unsigned int indS=0; indS < rawString.length(); indS++) {
         char c = rawString[indS];
         bool valid = isalnum(c) || c == ' ' || c == '-' || c == '='
-                                || c == '(' || c == ')' || c == '.';
+                                || c == '(' || c == ')' || c == '.' || c == '_';
         bool isBracket = c == '(' || c == ')';
         bool last = indS == rawString.length() - 1;
 
@@ -163,6 +163,8 @@ cirStatement::cirStatement(const cirStatement &_stat) {
     strList = _stat.strList;
     type = _stat.type;
     statClass = _stat.statClass;
+    bracketList = _stat.bracketList;
+    bracketNames = _stat.bracketNames;
 }
 
 cirStatement::~cirStatement() {

@@ -19,6 +19,7 @@
 // two nodes.
 
 #include "element.h"
+#include <stdlib.h>
 
 Element::Element() {
     elemType = STAT_EMPTY;
@@ -51,7 +52,7 @@ Element::Element(const cirStatement &stat) {
     {
         switch (elemType) {
         case STAT_VOLTAGESOURCE: {
-            assert(strList.size() == 4 || strList.size() == 5);
+            assert(strList.size() > 2);
 
             nodeList.push_back(strList[1]);
             nodeList.push_back(strList[2]);
@@ -59,10 +60,29 @@ Element::Element(const cirStatement &stat) {
             if (strList.size() == 4) {
                 Value val(strList[3]);
                 valueList.push_back(val.val);
-            } else {
+                typeList.push_back("DC");
+            } else if (strList.size() == 5){
                 typeList.push_back(strList[3]);
                 Value val(strList[4]);
                 valueList.push_back(val.val);
+            } else if (strList.size() == 3) {
+                std::cout << stat.bracketList.size() << std::endl;
+                if (stat.bracketList.size() == 1) {
+                    assert(stat.bracketNames.size() == 1);
+
+                    std::string bracketName = stat.bracketNames[0];
+                    std::vector <std::string> bracket = stat.bracketList[0];
+
+                    typeList.push_back(bracketName);
+
+                    processWaveform(bracket, bracketName);
+                } else {
+                    std::cerr << "Incorrect number of parameters for voltage source" << std::endl;
+                    exit(-1);
+                }
+            } else {
+                std::cerr << "Incorrect number of arguments for voltage source!" << std::endl;
+                exit(-1);
             }
         } break;
         case STAT_CURRENTSOURCE: {
@@ -125,6 +145,38 @@ Element::Element(const cirStatement &stat) {
 }
 
 Element::~Element() {
+}
+
+void
+Element::processWaveform(std::vector<std::string> &bracket, std::string &bracketName) {
+    if (bracketName == "SIN") {
+        // SIN(VO VA FREQ TD THETA) Offset, Amplitude, Frequency, Delay, Damping factor
+        if (bracket.size() < 2) {
+            std::cerr << "SIN() requires 2 parameters" << std::endl;
+            exit(-1);
+        }
+    } else if (bracketName == "EXP") {
+        // EXP(V1, V2, TD1, TAU1, TD2, TAU2)
+        // V1    Initial value,
+        // V2    Pulsed value,
+        // TD1   Rise delay time,
+        // TAU1  Rise time constant,
+        // TD2   Fall delay time,
+        // TAU2  Fall time constant.
+        if (bracket.size() < 2) {
+            std::cerr << "EXP() requires 2 parameters" << std::endl;
+            exit(-1);
+        }
+
+    } else {
+        std::cerr << "Unknown transient source : " << bracketName << std::endl;
+        exit(-1);
+    }
+
+    for (unsigned int indVal = 0; indVal < bracket.size(); indVal++) {
+        Value val(bracket[indVal]);
+        valueList.push_back(val.val);
+    }
 }
 
 ElementList::ElementList(std::vector <Element> &_elements) {

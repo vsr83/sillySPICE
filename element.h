@@ -59,6 +59,8 @@ public:
     std::vector <std::string> elemList;
     std::vector <std::string> typeList;
     std::vector <double> valueList;
+private:
+    void processWaveform(std::vector<std::string> &bracket, std::string &bracketName);
 };
 
 /* ElementList objects are vectors of Element objects with basic functionality
