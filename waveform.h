@@ -23,7 +23,6 @@
 class Waveform {
 public:
     enum{WAVEFORM_SIN,
-         WAVEFORM_DC,
          WAVEFORM_EXP,
          WAVEFORM_PWL,
          WAVEFORM_SFFM,
@@ -37,17 +36,67 @@ public:
     double eval(double t);
     void setTransientParameters(double timestep, double t1, double t2);
 
+    /* SIN(V0 VA FREQ TD THETA)
+     *                       Default
+     *  V0   Offset             -
+     *  VA   Amplitude          -
+     * FREQ  Frequency         1/t2
+     *  TD   Delay              0
+     * THETA Damping factor     0
+     */
     double sinV0, sinVA, sinFREQ, sinTD, sinTHETA;
     bool sinFREQset;
 
-    double pulseV1, pulseV2, pulseTD, pulseTR, pulsePW, pulsePER;
+    /* PULSE(V1 V2 TD TR TF PW PER)
+     *                      Default
+     * V1   Initial value      -
+     * V2   Pulsed value       -
+     * TD   Delay time         0
+     * TR   Rise time       time step
+     * TF   Fall time       time step
+     * PW   Pulse width        t2
+     * PER  Period             t2
+     */
+
+    double pulseV1, pulseV2, pulseTD, pulseTR, pulseTF, pulsePW, pulsePER;
+    bool pulseTRset, pulseTFset, pulsePWset, pulsePERset;
+
+    /* EXP(V1 V2 TD1 TAU1 TD2 TAU2)
+     *                            Default
+     * V1    Initial value           -
+     * V2    Pulsed value            -
+     * TD1   Rise delay time         0
+     * TAU1  Rise time constant  time step
+     * TD2   Fall delay time     t1 + time step
+     * TAU2  Fall time constant  time step
+     */
 
     double expV1, expV2, expTD1, expTAU1, expTD2, expTAU2;
     bool expTAU1set, expTD2set, expTAU2set;
 
+    // PWL(T0 A0 T1 A1 T2 A2 ...)
+
     std::vector <double> PWLtime, PWLampl;
 
-    double SFFMV0, SFFMVA, SFFMFC, SFFMMDI, SFFMFS;
+    /* SFFM(VO VA FC MDI FS)
+     *                           Default
+     *  VO   Offset                 -
+     *  VA   Amplitude              -
+     *  FC   Carrier frequency      -
+     *  MDI  Modulation index       -
+     *  FS   Signal frequency       -
+     */
+
+    double SFFMVO, SFFMVA, SFFMFC, SFFMMDI, SFFMFS;
+
+    /* AM(VA VO MF DC tD)
+     *                           Default
+     *  VA   Amplitude              -
+     *  VO   Offset                 -
+     *  MF   Modulation frequency   -
+     *  FC   Carrier frequency      -
+     *  TD   Signal delay           -
+     */
 
     double AMVA, AMVO, AMMF, AMFC, AMTD;
 

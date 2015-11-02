@@ -50,8 +50,6 @@ Waveform::Waveform(std::vector<std::string> &bracket, std::string &bracketName) 
         } else {
             sinTHETA = 0;
         }
-    } else if (name == "DC") {
-        mode = WAVEFORM_DC;
     } else if (name == "EXP") {
         mode = WAVEFORM_EXP;
 
@@ -115,10 +113,66 @@ Waveform::Waveform(std::vector<std::string> &bracket, std::string &bracketName) 
         }
     } else if (name == "SFFM") {
         mode = WAVEFORM_SFFM;
+
+        if (strList.size() != 5) {
+            std::cerr << "SFFM() requires five parameters!" << std::endl;;
+            exit(-1);
+        }
+        Value valVO(strList[0]);  SFFMVO  = valVO.val;
+        Value valVA(strList[1]);  SFFMVA  = valVA.val;
+        Value valFC(strList[2]);  SFFMFC  = valFC.val;
+        Value valMDI(strList[3]); SFFMMDI = valMDI.val;
+        Value valMFS(strList[4]); SFFMFS  = valMFS.val;
     } else if (name == "AM") {
         mode = WAVEFORM_AM;
+
+        if (strList.size() != 5) {
+            std::cerr << "AM() requires five parameters!" << std::endl;;
+            exit(-1);
+        }
+        Value valVA(strList[0]); AMVA = valVA.val;
+        Value valVO(strList[1]); AMVO = valVO.val;
+        Value valMF(strList[2]); AMMF = valMF.val;
+        Value valFC(strList[3]); AMFC = valFC.val;
+        Value valTD(strList[4]); AMTD = valTD.val;
     } else if (name == "PULSE") {
         mode = WAVEFORM_PULSE;
+        if (strList.size() < 2) {
+            std::cerr << "PULSE() requires at least two parameters!" << std::endl;;
+            exit(-1);
+        }
+        Value valV1(strList[0]); pulseV1 = valV1.val;
+        Value valV2(strList[1]); pulseV2 = valV2.val;
+
+        if (strList.size() >= 3) {
+            Value valTD(strList[2]); pulseTD = valTD.val;
+        } else {
+            pulseTD    = 0;
+        }
+        if (strList.size() >= 4) {
+            Value valTR(strList[3]); pulseTR = valTR.val;
+            pulseTRset = true;
+        } else {
+            pulseTRset = false;
+        }
+        if (strList.size() >= 5) {
+            Value valTF(strList[4]); pulseTF = valTF.val;
+            pulseTFset = true;
+        } else {
+            pulseTFset = false;
+        }
+        if (strList.size() >= 6) {
+            Value valPW(strList[5]); pulsePW = valPW.val;
+            pulsePWset = true;
+        } else {
+            pulsePWset = false;
+        }
+        if (strList.size() >= 7) {
+            Value valPER(strList[6]); pulsePER = valPER.val;
+            pulsePERset = true;
+        } else {
+            pulsePERset = false;
+        }
     } else if (name == "NOISE") {
         mode = WAVEFORM_NOISE;
     } else {
@@ -150,9 +204,26 @@ Waveform::setTransientParameters(double timestep, double t1, double t2) {
             expTAU2set = true;
         }
         break;
+    case WAVEFORM_PULSE:
+        if (!pulseTRset) {
+            pulseTR = timestep;
+            pulseTRset = true;
+        }
+        if (!pulseTFset) {
+            pulseTF = timestep;
+            pulseTFset = true;
+        }
+        if (!pulsePWset) {
+            pulsePW = t2;
+            pulsePWset = true;
+        }
+        if (!pulsePERset) {
+            pulsePER = t2;
+            pulsePERset = true;
+        }
+        break;
     }
 }
-
 double
 Waveform::eval(double t) {
     switch (mode) {
@@ -179,7 +250,7 @@ Waveform::eval(double t) {
         }
 
         break;
-    case WAVEFORM_PWL:
+    case WAVEFORM_PWL: {
         for (unsigned int indPWL = 0; indPWL < PWLampl.size()-1; indPWL++) {
             double timeCur = PWLtime[indPWL],
                    timeNext= PWLtime[indPWL+1],
@@ -190,6 +261,42 @@ Waveform::eval(double t) {
             }
         }
         return 0;
+      }  break;
+    case WAVEFORM_PULSE: {
+        double tmod = fmod(t, pulsePER);
+
+        double t1 = pulseTD,
+               t2 = pulseTD + pulseTR,
+               t3 = pulseTD + pulseTR + pulsePW,
+               t4 = pulseTD + pulseTR + pulsePW + pulseTF;
+
+        if (tmod >= 0 && tmod < t1) {
+            return pulseV1;
+        } else if (tmod >= t1 && tmod < t2) {
+            if (t1 != t2) {
+                return pulseV1 + (pulseV2 - pulseV1) * (t - t1)/(t2 - t1);
+            } else {
+                return pulseV1;
+            }
+        } else if (tmod >= t2 && tmod < t3) {
+            return pulseV2;
+        } else if (tmod >= t3 && tmod < t4) {
+            if (t3 != t4) {
+                return pulseV2 - (pulseV2 - pulseV1) * (t - t3)/(t4 - t3);
+            } else {
+                return pulseV2;
+            }
+        } else if (tmod >= t4) {
+            return pulseV1;
+        } else {
+            return pulseV1;
+        }
+      }  break;
+    case WAVEFORM_SFFM:
+        return SFFMVO + SFFMVA * sin(2*M_PI*SFFMFC*t + SFFMMDI * sin(2*M_PI*SFFMFS*t));
+        break;
+    case WAVEFORM_AM:
+        return AMVA * (AMVO + sin(2*M_PI*AMMF*t))*sin(2*M_PI*AMFC*t);
         break;
     }
 }
