@@ -18,7 +18,12 @@
 #ifndef WAVEFORM_H
 #define WAVEFORM_H
 
-#include "element.h"
+//#include "element.h"
+#include <vector>
+#include <string>
+#include <math.h>
+#include <iostream>
+#include "value.h"
 
 class Waveform {
 public:
@@ -103,7 +108,7 @@ public:
     double noiseNA, noiseNT, noiseNALPHA, noiseNAMP, noiseRTSAM, noiseRTSCAPT, noiseRTSEMT;
 
     unsigned int mode;
-private:
+//private:
     std::vector <std::string> strList;
     std::string name;
 };

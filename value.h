@@ -28,7 +28,6 @@
 
 #include <iostream>
 #include <string>
-#include "value.h"
 
 class Value {
 public:

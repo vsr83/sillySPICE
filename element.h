@@ -26,6 +26,7 @@
 #include "cirFile.h"
 #include "value.h"
 #include "statements.h"
+#include "waveform.h"
 
 /* Element objects correspond to circuit elements or their models in the
  * circuits.
@@ -51,6 +52,7 @@ class Element {
 public:
     Element();
     Element(const cirStatement &stat);
+    Element(const Element &elem);
     ~Element();
 
     unsigned int elemType, elemClass;
@@ -59,8 +61,8 @@ public:
     std::vector <std::string> elemList;
     std::vector <std::string> typeList;
     std::vector <double> valueList;
-private:
-    void processWaveform(std::vector<std::string> &bracket, std::string &bracketName);
+
+    Waveform *waveForm;
 };
 
 /* ElementList objects are vectors of Element objects with basic functionality

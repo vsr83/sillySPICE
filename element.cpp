@@ -24,12 +24,33 @@
 Element::Element() {
     elemType = STAT_EMPTY;
     elemClass = CLASS_EMPTY;
+    waveForm = 0;
+}
+
+Element::Element(const Element &elem) {
+    std::cout << "COPY : " << elem.name << std::endl;
+
+    elemType  = elem.elemType;
+    elemClass = elem.elemClass;
+    name      = elem.name;
+    nodeList  = elem.nodeList;
+    elemList  = elem.elemList;
+    typeList  = elem.typeList;
+    valueList = elem.valueList;
+
+    if (elem.waveForm) {
+        std::cout << "COPY -- waveform" << std::endl;
+        waveForm = new Waveform(elem.waveForm->strList, elem.waveForm->name);
+    } else {
+        waveForm = 0;
+    }
 }
 
 Element::Element(const cirStatement &stat) {
     elemType  = stat.type;
     elemClass = stat.statClass;
     name  = stat.strList[0];
+    waveForm = 0;
 
     std::vector <std::string> strList = stat.strList;
 
@@ -74,8 +95,7 @@ Element::Element(const cirStatement &stat) {
                     std::vector <std::string> bracket = stat.bracketList[0];
 
                     typeList.push_back(bracketName);
-
-                    processWaveform(bracket, bracketName);
+                    waveForm = new Waveform(bracket, bracketName);
                 } else {
                     std::cerr << "Incorrect number of parameters for voltage source" << std::endl;
                     exit(-1);
@@ -86,7 +106,7 @@ Element::Element(const cirStatement &stat) {
             }
         } break;
         case STAT_CURRENTSOURCE: {
-            assert(strList.size() == 4 || strList.size() == 5);
+            assert(strList.size() >= 3 && strList.size() <= 5);
 
             nodeList.push_back(strList[1]);
             nodeList.push_back(strList[2]);
@@ -94,10 +114,24 @@ Element::Element(const cirStatement &stat) {
             if (strList.size() == 4) {
                 Value val(strList[3]);
                 valueList.push_back(val.val);
-            } else {
+            } else if (strList.size() == 5){
                 typeList.push_back(strList[3]);
                 Value val(strList[4]);
                 valueList.push_back(val.val);
+            } else if (strList.size() == 3) {
+                std::cout << stat.bracketList.size() << std::endl;
+                if (stat.bracketList.size() == 1) {
+                    assert(stat.bracketNames.size() == 1);
+
+                    std::string bracketName = stat.bracketNames[0];
+                    std::vector <std::string> bracket = stat.bracketList[0];
+
+                    typeList.push_back(bracketName);
+                    waveForm = new Waveform(bracket, bracketName);
+                } else {
+                    std::cerr << "Incorrect number of parameters for current source" << std::endl;
+                    exit(-1);
+                }
             }
         } break;
         case STAT_CCCS: {
@@ -145,38 +179,11 @@ Element::Element(const cirStatement &stat) {
 }
 
 Element::~Element() {
-}
-
-void
-Element::processWaveform(std::vector<std::string> &bracket, std::string &bracketName) {
-    if (bracketName == "SIN") {
-        // SIN(VO VA FREQ TD THETA) Offset, Amplitude, Frequency, Delay, Damping factor
-        if (bracket.size() < 2) {
-            std::cerr << "SIN() requires 2 parameters" << std::endl;
-            exit(-1);
-        }
-    } else if (bracketName == "EXP") {
-        // EXP(V1, V2, TD1, TAU1, TD2, TAU2)
-        // V1    Initial value,
-        // V2    Pulsed value,
-        // TD1   Rise delay time,
-        // TAU1  Rise time constant,
-        // TD2   Fall delay time,
-        // TAU2  Fall time constant.
-        if (bracket.size() < 2) {
-            std::cerr << "EXP() requires 2 parameters" << std::endl;
-            exit(-1);
-        }
-
-    } else {
-        std::cerr << "Unknown transient source : " << bracketName << std::endl;
-        exit(-1);
+    if (waveForm) {
+        delete waveForm;
+        std::cout << "delete waveform" << std::endl;
     }
-
-    for (unsigned int indVal = 0; indVal < bracket.size(); indVal++) {
-        Value val(bracket[indVal]);
-        valueList.push_back(val.val);
-    }
+    waveForm = 0;
 }
 
 ElementList::ElementList(std::vector <Element> &_elements) {

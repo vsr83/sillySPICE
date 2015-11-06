@@ -31,6 +31,11 @@ Transient::Transient(Parser *_parser, double _dt, double _t2, double _t1, double
     std::vector <unsigned int> currentInds;
     std::vector <double> propConstVolt, propConstCur;
 
+    unsigned int indWF = 0;
+    std::vector <unsigned int> wfSourceInds;
+    std::vector <Waveform> sourceWfs;
+
+
     for (unsigned int indElem = 0; indElem < parser->elemList->elements.size(); indElem++) {
         Element elem = parser->elemList->elements[indElem];
 
@@ -104,6 +109,20 @@ Transient::Transient(Parser *_parser, double _dt, double _t2, double _t1, double
 
             propConstVolt.push_back(-(1-theta)*dt/indValue - (dt*theta)/indValue);
             propConstCur.push_back(-1);
+        } else if ((elem.elemType == STAT_VOLTAGESOURCE || elem.elemType== STAT_CURRENTSOURCE) && elem.waveForm) {
+            std::stringstream ssVS;
+            ssVS << "V_dummy_" << elem.name << " "
+                  << elem.nodeList[0] << " " << elem.nodeList[1] << " "
+                  << 0;
+            std::string strVS = ssVS.str();
+
+            elem.waveForm->setTransientParameters(dt, t1, t2);
+            Element elemVS(strVS);
+            elements.push_back(elemVS);
+            sourceWfs.push_back(*elem.waveForm);
+            wfSourceInds.push_back(indNew);
+            indNew++;
+            indWF++;
         } else {
             elements.push_back(elem);
             modelList.push_back(indNew);
@@ -116,6 +135,14 @@ Transient::Transient(Parser *_parser, double _dt, double _t2, double _t1, double
 
     // Perform the time integration.
     for (double t=t1; t < t2; t+=dt) {
+        for (unsigned int ind = 0; ind < indWF; ind++) {
+            unsigned int indSource = wfSourceInds[ind];
+
+            double val = sourceWfs[ind].eval(t);
+            elemList->elements[indSource].valueList[0] = val;
+            std::cout << "EFEVAL " << t << "->" << val << std::endl;
+        }
+
         // Assemble the MNA equations for the modified circuit.
         Assembly ass(parser->nodeList, elemList, false);
 
@@ -172,7 +199,7 @@ main(int argc, char **argv) {
     std::cout << std::endl << "Transient Analysis of linear circuit: \""
               << cir.title << "\"" << std::endl;
     Parser parser(cir.statList);
-    Transient tran(&parser, 0.0001, 0.1, 0, 0.5);
+    Transient tran(&parser, 0.0001, 1, 0, 0.5);
     tran.elemList->disp();
 }
 

@@ -92,7 +92,7 @@ struct {
     STAT_CAPACITANCE,    CLASS_PASSIVE,   "C",          true,  true,  3, 5,    "Capacitance",
     STAT_TRANSMISLINE,   CLASS_PASSIVE,   "T",          true,  false, 5, 8,    "Transmission Line",
     STAT_VOLTAGESOURCE,  CLASS_SOURCE,    "V",          true,  true,  2, 5,    "Voltage Source",
-    STAT_CURRENTSOURCE,  CLASS_SOURCE,    "I",          true,  true , 3, 5,    "Current Source",
+    STAT_CURRENTSOURCE,  CLASS_SOURCE,    "I",          true,  true , 2, 5,    "Current Source",
     STAT_VCVS,           CLASS_SOURCE,    "E",          true,  true,  5, 5,    "Voltage-Controlled Voltage Source",
     STAT_CCCS,           CLASS_SOURCE,    "F",          true,  true,  4, 4,    "Current-Controlled Current Source",
     STAT_VCCS,           CLASS_SOURCE,    "G",          true,  true,  5, 5,    "Voltage-Controlled Current Source",

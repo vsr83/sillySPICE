@@ -1,0 +1,9 @@
+SIMPLE CAPACITIVE CIRCUIT
+* Analytical solution can be easily obtained as:
+
+VAC 1 0 PULSE (0 1 0.0001) 
+R1   2 1 10000
+C1   0 2 1u
+
+.tran 0 1
+.end

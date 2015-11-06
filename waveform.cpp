@@ -228,6 +228,7 @@ double
 Waveform::eval(double t) {
     switch (mode) {
     case WAVEFORM_SIN:
+        std::cout << "SIN " << sinV0 << " " << sinVA << " " << sinFREQ << " " << sinTD << std::endl;
         if (t >= 0 && t < sinTD) {
             return sinV0;
         } else if (t >= sinTD) {

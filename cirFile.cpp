@@ -171,7 +171,7 @@ cirStatement::~cirStatement() {
 }
 
 void
-cirStatement::disp() {
+cirStatement::disp() const {
     std::cout << strList.size() << " - ";
     for (unsigned int indStr = 0; indStr < strList.size(); indStr++) {
         std::cout << "/" << strList[indStr];
