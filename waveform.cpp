@@ -274,7 +274,7 @@ Waveform::eval(double t) {
             return pulseV1;
         } else if (tmod >= t1 && tmod < t2) {
             if (t1 != t2) {
-                return pulseV1 + (pulseV2 - pulseV1) * (t - t1)/(t2 - t1);
+                return pulseV1 + (pulseV2 - pulseV1) * (tmod - t1)/(t2 - t1);
             } else {
                 return pulseV1;
             }
@@ -282,7 +282,7 @@ Waveform::eval(double t) {
             return pulseV2;
         } else if (tmod >= t3 && tmod < t4) {
             if (t3 != t4) {
-                return pulseV2 - (pulseV2 - pulseV1) * (t - t3)/(t4 - t3);
+                return pulseV2 - (pulseV2 - pulseV1) * (tmod - t3)/(t4 - t3);
             } else {
                 return pulseV2;
             }
@@ -304,3 +304,36 @@ Waveform::eval(double t) {
 Waveform::~Waveform() {
 
 }
+
+#ifdef TEST_WAVEFORM
+
+int
+main(int argc, char **argv) {
+    std::string sinName("SIN");
+    std::vector<std::string> vsin;
+    vsin.push_back("2");
+    vsin.push_back("1.5");
+    vsin.push_back("10");
+
+    std::string pulseName("PULSE");
+    std::vector<std::string> vpulse;
+    vpulse.push_back("0.5");
+    vpulse.push_back("2");
+    vpulse.push_back("0.0");
+    vpulse.push_back("0.01");
+    vpulse.push_back("0.01");
+    vpulse.push_back("0.025");
+    vpulse.push_back("0.1");
+
+
+    Waveform wfSin(vsin, sinName);
+    Waveform wfPulse(vpulse, pulseName);
+
+    for (double t = 0; t < 1; t+= 0.001) {
+        double valSin = wfSin.eval(t),
+               valPulse = wfPulse.eval(t);
+        std::cout << t << " " << valSin << " " << valPulse << std::endl;
+    }
+}
+
+#endif

@@ -1,3 +1,20 @@
+/* sillySPICE - A SPICE-like Circuit Solver
+   Copyright (C) 2015 Ville Räisänen <vsr at vsr.name>
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "value.h"
 #include <assert.h>
 #include <cctype>
@@ -6,6 +23,10 @@
 Value::Value(std::string str) {
     unsigned len = str.length();
 
+    // Each Value string consist of a numeric part strNum and a possible
+    // suffix strSuffix. The start of strSuffix is the first character not
+    // allowed in the strNum part.
+
     std::string strNum, strSuffix;
 
     assert(len > 0);
@@ -13,7 +34,8 @@ Value::Value(std::string str) {
     for (unsigned int indStr = 0; indStr < len; indStr++) {
         char c = str[indStr];
 
-        if (!isdigit(c) && c!='-' && c!='.' && c!='+') {
+        // Values with the form "1e-5" in strNum must be allowed.
+        if (!isdigit(c) && c != 'E' && c!='-' && c!='.' && c!='+') {
             modenum = false;
         }
         if (modenum) {
@@ -25,6 +47,7 @@ Value::Value(std::string str) {
 //    std::cout << "\"" << strNum << "\"" << "/\"" << strSuffix << "\"" << std::endl;
     val = atof(strNum.c_str());
 
+    // Process suffix.
     if (strSuffix.length() == 0) {
     } else if (strSuffix.length() >= 2 &&
                 strSuffix[0] == 'M' && strSuffix[1] == 'E' && strSuffix[2] == 'G') {
